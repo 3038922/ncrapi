@@ -11,7 +11,7 @@ void UserDisplay::createVersion(lv_obj_t *parent)
     userDisplay->ostr.clear();                                             //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
     userDisplay->ostr.str("");                                             //2：调用str("")将缓冲区清零，清除脏数据
     userDisplay->ostr << "pros_version:" << PROS_VERSION_STRING << '\n'
-                      << "oklib_version:3.3.7" << '\n'
+                      << "oklib_version:3.3.8" << '\n'
                       << "lvgl_version:" << LVGL_VERSION_INFO << '\n'
                       << "ncr_version:" << NCR_VERSION_STRING << std::endl;
     std::string temp = userDisplay->ostr.str();
