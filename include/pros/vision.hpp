@@ -24,345 +24,398 @@
 
 #include <cstdint>
 
-namespace pros
-{
-class Vision
-{
-  public:
-    /**
-	*在给定端口上创建Vision Sensor对象。
-   	 * \ param端口
-   	 * V5端口号从1-21开始
-   	 * \ param zero_point
-   	 * vision_zero_e_t之一，用于设置FOV的（0,0）坐标
+namespace pros {
+class Vision {
+	public:
+	/**
+	 * Create a Vision Sensor object on the given port.
+	 *
+	 * \param port
+	 *        The V5 port number from 1-21
+	 * \param zero_point
+	 *        One of vision_zero_e_t to set the (0,0) coordinate for the FOV
 	 */
-    Vision(std::uint8_t port, vision_zero_e_t zero_point = E_VISION_ZERO_TOPLEFT);
+	Vision(std::uint8_t port, vision_zero_e_t zero_point = E_VISION_ZERO_TOPLEFT);
 
-    /**
-	*清除视觉传感器LED颜色，将其重置为默认值
-	*行为，显示最突出的对象签名颜色。
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Clears the vision sensor LED color, reseting it back to its default
+	 * behavior, displaying the most prominent object signature color.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
 	 */
-    std::int32_t clear_led(void) const;
+	std::int32_t clear_led(void) const;
 
-    /**
-	*创建表示给定签名组合的颜色代码
-	* ID。
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EINVAL  - 提供的签名少于两个，或者其中一个签名
-	*签名超出其[1-7]范围。
-	* \ param sig_id1
-	*添加到颜色代码的第一个签名ID [1-7]
-	* \ param sig_id2
-	*第二个签名id [1-7]添加到颜色代码中
-	* \ param sig_id3
-	*第三个签名ID [1-7]添加到颜色代码中
-	* \ param sig_id4
-	*第四个签名ID [1-7]添加到颜色代码中
-	* \ param sig_id5
-	*第五个签名id [1-7]添加到颜色代码中
-	*
-	* \ return包含颜色代码信息的vision_color_code_t对象。
+	/**
+	 * Creates a signature from the vision sensor utility
+	 *
+	 * \param id
+	 *        The signature ID
+	 * \param u_min
+	 *        Minimum value on U axis
+	 * \param u_max
+	 *        Maximum value on U axis
+	 * \param u_mean
+	 *        Mean value on U axis
+	 * \param v_min
+	 *        Minimum value on V axis
+	 * \param v_max
+	 *        Maximum value on V axis
+	 * \param v_mean
+	 *        Mean value on V axis
+	 * \param rgb
+	 *        Scale factor
+	 * \param type
+	 *        Signature type
+	 *
+	 * \return A vision_signature_s_t that can be set using Vision::set_signature
 	 */
-    vision_color_code_t create_color_code(const std::uint32_t sig_id1, const std::uint32_t sig_id2,
-                                          const std::uint32_t sig_id3 = 0, const std::uint32_t sig_id4 = 0,
-                                          const std::uint32_t sig_id5 = 0) const;
+	static vision_signature_s_t signature_from_utility(const std::int32_t id, const std::int32_t u_min,
+	                                                   const std::int32_t u_max, const std::int32_t u_mean,
+	                                                   const std::int32_t v_min, const std::int32_t v_max,
+	                                                   const std::int32_t v_mean, const float range,
+	                                                   const std::int32_t type);
 
-    /**
-	*根据size_id获取第n个最大的对象。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* EDOM  -  size_id大于可用对象的数量。
-	* EHOSTDOWN  - 读取视觉传感器失败的原因不明。
-	*
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	*
-	* \ return对应于给定大小id的vision_object_s_t对象，或
-	*如果发生错误，则为PROS_ERR。
+	/**
+	 * Creates a color code that represents a combination of the given signature
+	 * IDs.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EINVAL - Fewer than two signatures have been provided, or one of the
+	 *          signatures is out of its [1-7] range.
+	 *
+	 * \param sig_id1
+	 *        The first signature id [1-7] to add to the color code
+	 * \param sig_id2
+	 *        The second signature id [1-7] to add to the color code
+	 * \param sig_id3
+	 *        The third signature id [1-7] to add to the color code
+	 * \param sig_id4
+	 *        The fourth signature id [1-7] to add to the color code
+	 * \param sig_id5
+	 *        The fifth signature id [1-7] to add to the color code
+	 *
+	 * \return A vision_color_code_t object containing the color code information.
 	 */
-    vision_object_s_t get_by_size(const std::uint32_t size_id) const;
+	vision_color_code_t create_color_code(const std::uint32_t sig_id1, const std::uint32_t sig_id2,
+	                                      const std::uint32_t sig_id3 = 0, const std::uint32_t sig_id4 = 0,
+	                                      const std::uint32_t sig_id5 = 0) const;
 
-    /**
-	*根据size_id获取给定签名的第n个最大对象。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* EDOM  -  size_id大于可用对象的数量。
-	* EHOSTDOWN  - 读取视觉传感器失败的原因不明。
-	*
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	* \ param签名
-	*对象将成为的vision_signature_s_t签名
-	* 回。
-	*
-	* \ return与给定签名对应的vision_object_s_t对象
-	*和size_id，或PROS_ERR如果发生错误。
+	/**
+	 * Gets the nth largest object according to size_id.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 * EDOM - size_id is greater than the number of available objects.
+	 * EHOSTDOWN - Reading the vision sensor failed for an unknown reason.
+	 *
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 *
+	 * \return The vision_object_s_t object corresponding to the given size id, or
+	 * PROS_ERR if an error occurred.
 	 */
-    vision_object_s_t get_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id) const;
+	vision_object_s_t get_by_size(const std::uint32_t size_id) const;
 
-    /**
-	*根据size_id获取给定颜色代码的第n个最大对象。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* EAGAIN  - 因未知原因读取视觉传感器失败。
-	*
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	* \ param color_code
-	*将返回对象的vision_color_code_t
-	*
-	* \ return对应于给定颜色代码的vision_object_s_t对象
-	*和size_id，或PROS_ERR如果发生错误。
+	/**
+	 * Gets the nth largest object of the given signature according to size_id.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 * EDOM - size_id is greater than the number of available objects.
+	 * EHOSTDOWN - Reading the vision sensor failed for an unknown reason.
+	 *
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 * \param signature
+	 *        The vision_signature_s_t signature for which an object will be
+	 *        returned.
+	 *
+	 * \return The vision_object_s_t object corresponding to the given signature
+	 * and size_id, or PROS_ERR if an error occurred.
 	 */
-    vision_object_s_t get_by_code(const std::uint32_t size_id, const vision_color_code_t color_code) const;
+	vision_object_s_t get_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id) const;
 
-    /**
-	*获取视觉传感器的曝光参数。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ return来自[0,100]的当前曝光百分比参数，
-	*如果发生错误，则为PROS_ERR
+	/**
+	 * Gets the nth largest object of the given color code according to size_id.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 * EAGAIN - Reading the Vision Sensor failed for an unknown reason.
+	 *
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 * \param color_code
+	 *        The vision_color_code_t for which an object will be returned
+	 *
+	 * \return The vision_object_s_t object corresponding to the given color code
+	 * and size_id, or PROS_ERR if an error occurred.
 	 */
-    std::int32_t get_exposure(void) const;
+	vision_object_s_t get_by_code(const std::uint32_t size_id, const vision_color_code_t color_code) const;
 
-    /**
-	*获取视觉传感器当前检测到的对象数。
-   	 *
-   	 *当错误状态为时，此函数使用以下errno值
-   	 * 到达：
-   	 * EACCES  - 另一个资源目前正在尝试访问该端口。
-   	 *
-   	 * \ return在指定的视觉传感器上检测到的物体数量。
-   	 *如果端口无效或发生错误，则返回PROS_ERR。
+	/**
+	 * Gets the exposure parameter of the Vision Sensor. See
+	 * https://pros.cs.purdue.edu/v5/tutorials/topical/vision.html#exposure-setting
+	 * for more detials.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \return The current exposure parameter from [0,150],
+	 * PROS_ERR if an error occurred
 	 */
-    std::int32_t get_object_count(void) const;
+	std::int32_t get_exposure(void) const;
 
-    /**
-	*获取具有给定id号的对象检测签名。
-	*
-	* \ param signature_id
-	*要读取的签名ID
-	*
-	* \ return包含有关签名信息的vision_signature_s_t。
+	/**
+	 * Gets the number of objects currently detected by the Vision Sensor.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \return The number of objects detected on the specified vision sensor.
+	 * Returns PROS_ERR if the port was invalid or an error occurred.
 	 */
-    vision_signature_s_t get_signature(const std::uint8_t signature_id) const;
+	std::int32_t get_object_count(void) const;
 
-    /**
-	*获取视觉传感器的白平衡参数。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ return传感器的当前RGB白平衡设置
+	/**
+	 * Gets the object detection signature with the given id number.
+	 *
+	 * \param signature_id
+	 *        The signature id to read
+	 *
+	 * \return A vision_signature_s_t containing information about the signature.
 	 */
-    std::int32_t get_white_balance(void) const;
+	vision_signature_s_t get_signature(const std::uint8_t signature_id) const;
 
-    /**
-	*将object_count对象描述符读入object_arr。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* EDOM  -  size_id大于可用对象的数量。
-	*
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	* \ param object_count
-	*要读取的对象数
-	* \ param [out] object_arr
-	*将对象复制到的指针
-	*
-	* \ return复制的对象签名数。这个数字将小于
-	* object_count如果视觉传感器检测到的物体较少。
-	*如果端口无效，发生错误或更少的对象，则返回PROS_ERR
-	*比找到size_id。object_arr中未找到的所有对象都是
-	*将VISION_OBJECT_ERR_SIG作为其签名。
+	/**
+	 * Get the white balance parameter of the Vision Sensor.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \return The current RGB white balance setting of the sensor
 	 */
-    std::int32_t read_by_size(const std::uint32_t size_id, const std::uint32_t object_count,
-                              vision_object_s_t *const object_arr) const;
+	std::int32_t get_white_balance(void) const;
 
-    /**
-	*将object_count对象描述符读入object_arr。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	* EDOM  -  size_id大于可用对象的数量。
-	* EHOSTDOWN  - 读取视觉传感器失败的原因不明。
-	*
-	* \ param object_count
-	*要读取的对象数
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	* \ param签名
-	*对象将成为的vision_signature_s_t签名
-	* 回。
-	* \ param [out] object_arr
-	*将对象复制到的指针
-	*
-	* \ return复制的对象签名数。这个数字将小于
-	* object_count如果视觉传感器检测到的物体较少。
-	*如果端口无效，发生错误或更少的对象，则返回PROS_ERR
-	*比找到size_id。object_arr中未找到的所有对象都是
-	*将VISION_OBJECT_ERR_SIG作为其签名。
+	/**
+	 * Reads up to object_count object descriptors into object_arr.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 * EDOM - size_id is greater than the number of available objects.
+	 *
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 * \param object_count
+	 *        The number of objects to read
+	 * \param[out] object_arr
+	 *             A pointer to copy the objects into
+	 *
+	 * \return The number of object signatures copied. This number will be less than
+	 * object_count if there are fewer objects detected by the vision sensor.
+	 * Returns PROS_ERR if the port was invalid, an error occurred, or fewer objects
+	 * than size_id were found. All objects in object_arr that were not found are
+	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-    std::int32_t read_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id, const std::uint32_t object_count,
-                             vision_object_s_t *const object_arr) const;
+	std::int32_t read_by_size(const std::uint32_t size_id, const std::uint32_t object_count,
+	                          vision_object_s_t* const object_arr) const;
 
-    /**
-	*将object_count对象描述符读入object_arr。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EINVAL  - 找到的对象数量少于object_count。
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param object_count
-	*要读取的对象数
-	* \ param size_id
-	*从按列表粗略排序的列表中读取的对象
-	*（0是最大项目，1是第二大项目等）
-	* \ param color_code
-	*将返回对象的vision_color_code_t
-	* \ param [out] object_arr
-	*将对象复制到的指针
-	*
-	* \ return复制的对象签名数。这个数字将小于
-	* object_count如果视觉传感器检测到的物体较少。
-	*如果端口无效，发生错误或更少的对象，则返回PROS_ERR
-	*比找到size_id。object_arr中未找到的所有对象都是
-	*将VISION_OBJECT_ERR_SIG作为其签名。
+	/**
+	 * Reads up to object_count object descriptors into object_arr.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 * EDOM - size_id is greater than the number of available objects.
+	 * EHOSTDOWN - Reading the vision sensor failed for an unknown reason.
+	 *
+	 * \param object_count
+	 *        The number of objects to read
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 * \param signature
+	 *        The vision_signature_s_t signature for which an object will be
+	 *        returned.
+	 * \param[out] object_arr
+	 *             A pointer to copy the objects into
+	 *
+	 * \return The number of object signatures copied. This number will be less than
+	 * object_count if there are fewer objects detected by the vision sensor.
+	 * Returns PROS_ERR if the port was invalid, an error occurred, or fewer objects
+	 * than size_id were found. All objects in object_arr that were not found are
+	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-    int32_t read_by_code(const std::uint32_t size_id, const vision_color_code_t color_code,
-                         const std::uint32_t object_count, vision_object_s_t *const object_arr) const;
+	std::int32_t read_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id, const std::uint32_t object_count,
+	                         vision_object_s_t* const object_arr) const;
 
-    /**
-	*将签名的内容作为初始化列表打印到终端。
-	*
-	* \ param sig
-	*将打印内容的签名
-	*
-	* \如果没有错误则返回1，否则返回PROS_ERR
+	/**
+	 * Reads up to object_count object descriptors into object_arr.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EINVAL - Fewer than object_count number of objects were found.
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param object_count
+	 *        The number of objects to read
+	 * \param size_id
+	 *        The object to read from a list roughly ordered by object size
+	 *        (0 is the largest item, 1 is the second largest, etc.)
+	 * \param color_code
+	 *        The vision_color_code_t for which objects will be returned
+	 * \param[out] object_arr
+	 *             A pointer to copy the objects into
+	 *
+	 * \return The number of object signatures copied. This number will be less than
+	 * object_count if there are fewer objects detected by the vision sensor.
+	 * Returns PROS_ERR if the port was invalid, an error occurred, or fewer objects
+	 * than size_id were found. All objects in object_arr that were not found are
+	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-    static std::int32_t print_signature(const vision_signature_s_t sig);
+	int32_t read_by_code(const std::uint32_t size_id, const vision_color_code_t color_code,
+	                     const std::uint32_t object_count, vision_object_s_t* const object_arr) const;
 
-    /**
-	*启用/禁用视觉传感器上的自动白平衡。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param已启用
-	*传递0表示禁用，1表示启用
-	*
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Prints the contents of the signature as an initializer list to the terminal.
+	 *
+	 * \param sig
+	 *        The signature for which the contents will be printed
+	 *
+	 * \return 1 if no errors occured, PROS_ERR otherwise
 	 */
-    std::int32_t set_auto_white_balance(const std::uint8_t enable) const;
+	static std::int32_t print_signature(const vision_signature_s_t sig);
 
-    /**
-	*设置视觉传感器的曝光参数。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param％
-	* [0,100]的新曝光百分比
-	*
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Enables/disables auto white-balancing on the Vision Sensor.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param enabled
+	 * 		    Pass 0 to disable, 1 to enable
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
 	 */
-    std::int32_t set_exposure(const std::uint8_t percent) const;
+	std::int32_t set_auto_white_balance(const std::uint8_t enable) const;
 
-    /**
-	*设置视觉传感器LED颜色，覆盖自动行为。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param rgb
-	*用于设置LED的RGB代码
-	*
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Sets the exposure parameter of the Vision Sensor. See
+	 * https://pros.cs.purdue.edu/v5/tutorials/topical/vision.html#exposure-setting
+	 * for more detials.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param percent
+	 *        The new exposure setting from [0,150].
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
 	 */
-    std::int32_t set_led(const std::int32_t rgb) const;
+	std::int32_t set_exposure(const std::uint8_t exposure) const;
 
-    /**
-	*将提供的物体检测特征存储在视觉传感器上。
-	*
-	*注意：这将签名保存在易失性存储器中，签名将是
-	*传感器断电后丢失。
-	*
-	* \ param signature_id
-	*要存储的签名ID
-	* \ param [in] signature_ptr
-	*指向要保存的签名的指针
-	*
-	* \如果没有错误则返回1，否则返回PROS_ERR
+	/**
+	 * Sets the vision sensor LED color, overriding the automatic behavior.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param rgb
+	 *        An RGB code to set the LED to
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
 	 */
-    std::int32_t set_signature(const std::uint8_t signature_id, vision_signature_s_t *const signature_ptr) const;
+	std::int32_t set_led(const std::int32_t rgb) const;
 
-    /**
-	*设置视觉传感器的白平衡参数。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param rgb
-	*传感器的新RGB白平衡设置
-	*
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Stores the supplied object detection signature onto the vision sensor.
+	 *
+	 * NOTE: This saves the signature in volatile memory, and the signature will be
+	 * lost as soon as the sensor is powered down.
+	 *
+	 * \param signature_id
+	 *        The signature id to store into
+	 * \param[in] signature_ptr
+	 *            A pointer to the signature to save
+	 *
+	 * \return 1 if no errors occured, PROS_ERR otherwise
 	 */
-    std::int32_t set_white_balance(const std::int32_t rgb) const;
+	std::int32_t set_signature(const std::uint8_t signature_id, vision_signature_s_t* const signature_ptr) const;
 
-    /**
-	*设置视野的（0,0）坐标。
-	*
-	*这将影响为每个请求返回的坐标
-	*来自传感器的vision_object_s_t，所以建议使用此功能
-	*仅用于在使用开始时配置传感器。
-	*
-	*当错误状态为时，此函数使用以下errno值
-	* 到达：
-	* EACCES  - 另一个资源目前正在尝试访问该端口。
-	*
-	* \ param zero_point
-	* vision_zero_e_t之一，用于设置FOV的（0,0）坐标
-	*
-	* \如果操作成功则返回1或如果操作则返回PROS_ERR
-	*失败，设置错误。
+	/**
+	 * Sets the white balance parameter of the Vision Sensor.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param rgb
+	 *        The new RGB white balance setting of the sensor
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
 	 */
-    std::int32_t set_zero_point(vision_zero_e_t zero_point) const;
+	std::int32_t set_white_balance(const std::int32_t rgb) const;
 
-  private:
-    std::uint8_t _port;
+	/**
+	 * Sets the (0,0) coordinate for the Field of View.
+	 *
+	 * This will affect the coordinates returned for each request for a
+	 * vision_object_s_t from the sensor, so it is recommended that this function
+	 * only be used to configure the sensor at the beginning of its use.
+	 *
+	 * This function uses the following values of errno when an error state is
+	 * reached:
+	 * EACCES - Another resource is currently trying to access the port.
+	 *
+	 * \param zero_point
+	 *        One of vision_zero_e_t to set the (0,0) coordinate for the FOV
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
+	 */
+	std::int32_t set_zero_point(vision_zero_e_t zero_point) const;
+
+	/**
+	 * Sets the Wi-Fi mode of the Vision sensor
+	 *
+	 * This functions uses the following values of errno when an error state is
+	 * reached:
+	 * EINVAL - The given port is not within the range of V5 ports (1-21)
+	 * EACCESS - Anothe resources is currently trying to access the port
+	 *
+	 * \param enable
+	 *        Disable Wi-Fi on the Vision sensor if 0, enable otherwise (e.g. 1)
+	 *
+	 * \return 1 if the operation was successful or PROS_ERR if the operation
+	 * failed, setting errno.
+	 */
+	std::int32_t set_wifi_mode(const std::uint8_t enable) const;
+
+	private:
+	std::uint8_t _port;
 };
-} // namespace pros
-#endif // _PROS_VISION_HPP_
+}  // namespace pros
+#endif  // _PROS_VISION_HPP_
