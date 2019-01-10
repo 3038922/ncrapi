@@ -1,7 +1,7 @@
 {
     "py/object": "pros.conductor.project.Project",
     "py/state": {
-        "project_name": "v5debug",
+        "project_name": "ncrapi",
         "target": "v5",
         "templates": {
             "kernel": {
