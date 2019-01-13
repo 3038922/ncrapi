@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-namespace ncrapi {
+namespace ncrapi
+{
 #define MAX_BUF_LEN 1024
 #define MAX_KEY_LEN 64
 #define MAX_VAL_LEN 256
