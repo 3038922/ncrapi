@@ -1,4 +1,5 @@
 #include "ncrapi/system/systemData.hpp"
+#include "ncrapi/userDisplay/userDisplay.hpp"
 lv_obj_t *debugLab;
 static lv_res_t clearAction(lv_obj_t *btn)
 {

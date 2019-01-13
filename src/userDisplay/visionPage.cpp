@@ -1,6 +1,6 @@
 
 #include "ncrapi/system/systemData.hpp"
-
+#include "ncrapi/userDisplay/userDisplay.hpp"
 namespace ncrapi
 {
 void UserDisplay::createVision(lv_obj_t *parent)
