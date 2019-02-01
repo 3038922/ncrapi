@@ -2,9 +2,19 @@
 #include "ncrapi\system\systemData.hpp"
 namespace ncrapi
 {
-SystemData::SystemData()
+SystemData::SystemData(const json &pragam)
 {
-    readSDcard(&_pidData, "/usd/pid.txt", "pid");
+
+    if (!readSDcard())
+    {
+        jsonVal = pragam;
+        saveData();
+    }
+
+    //系统信息录入
+    robotInfo = jsonVal["系统信息"]["机器人类型"];
+    robotInfo += jsonVal["系统信息"]["队伍编号"];
+    robotInfo += jsonVal["系统信息"]["用户"];
     debugFile = fopen("/usd/debug.txt", "a"); //以附加方式打开
     if (debugFile == nullptr)
     {
@@ -62,8 +72,8 @@ void SystemData::showDebugData(std::string &str)
     {
         fclose(debugFile);
         debugFile = fopen("/usd/debug.txt", "r"); //先关闭写模式再以读模式打开
-        char buf[MAX_BUF_LEN];
-        while (fgets(buf, MAX_BUF_LEN, debugFile) != nullptr)
+        char buf[1024];
+        while (fgets(buf, 1024, debugFile) != nullptr)
             str += buf;
         fclose(debugFile);                        //先关闭读模式
         debugFile = fopen("/usd/debug.txt", "a"); //再继续以写模式打开
@@ -77,5 +87,53 @@ void SystemData::closeDebugData()
         fclose(debugFile);
     else
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
+}
+/*
+ * 从SD中读取文件 存入数据容器
+ * @tparam DATA 数据容器类型
+ * @param data 数据容器
+ * @param filePath 路径
+ * @param name 名字
+ */
+
+bool SystemData::readSDcard()
+{
+    FILE *file = fopen("config.json", "r");
+    if (file == nullptr)
+    {
+        std::cerr << "json 文件打开错误" << std::endl;
+        return false;
+    }
+    char buf[1024];
+    std::string line;
+    while (fgets(buf, 1024, file) != nullptr) //读取一行
+        line += buf;
+    jsonVal = json::parse(line);
+    //std::cout << line << std::endl;
+    fclose(file);
+    return true;
+}
+
+/**
+ * 以vector 容器为基础修改保存文件
+ * @tparam T 数据的类型
+ * @param data 数据的名称
+ * @param filePath  数据的路径
+ * @return true 保存成功
+ * @return false 保存失败
+ */
+
+bool SystemData::saveData()
+{
+    FILE *file = fopen("config.json", "w");
+    if (file == nullptr)
+    {
+        std::cerr << "json 保存失败" << std::endl;
+        return false;
+    }
+    fprintf(file, "%s", jsonVal.dump(4).c_str()); //保存
+    std::cout << "保存成功" << std::endl;
+    fclose(file);
+    return true;
 }
 } // namespace ncrapi

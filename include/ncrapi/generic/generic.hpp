@@ -1,9 +1,10 @@
 #pragma once
-#include "../userDisplay/userDisplay.hpp"
-#include "api.h"
-#include "ncrapi/system/systemData.hpp"
-#include <memory>
-#include <vector>
+#include "ncrapi/device/motor.hpp"
+#include "ncrapi/system/json.hpp"
+#include "ncrapi/system/object.hpp"
+#include "ncrapi/userDisplay/userDisplay.hpp"
+#include "ncrapi/util/timer.hpp"
+#include "pros/misc.hpp"
 
 namespace ncrapi
 {
@@ -17,7 +18,9 @@ class Generic : public Obj
 {
 
   public:
-    Generic(const std::vector<pros::Motor> &motorList, const std::string name, const int hold = 0);
+    Generic(const std::string &name, const json &pragma);
+
+    Generic(const std::string name, const std::vector<Motor> &motorList, const int hold = 0);
     /**
      * 初始化函数
      * @param lab 进度条 
@@ -146,17 +149,21 @@ class Generic : public Obj
     virtual void showDetailedInfo() override;
 
   protected:
-    const std::vector<pros::Motor> _motorList;
+    std::vector<Motor> _motorList;
     const std::string _name;
-    const int _holdVal;
+    int _holdVal;
     float _holdingFlag = 0;
-    int _pwm = 0;
+    int _openLoopVal = 0; //开环控制设置值
     size_t _safeModeFlags = 0;
     int _state = 0; //-1降 0 悬停 1 升
-    int32_t _isMotorReady = 0;
     uint8_t _motorCount = 0;
     int _mode = 0;    //1 系统正传 0悬停 -1 系统反转 2使用原厂PID控制
     size_t _gearing;  //齿轮最大速度
     size_t _nums = 0; //马达总数
-};                    // namespace ncrapi
+    Timer _timer;     //系统计时器
+    bool _isInit = false;
+
+  private:
+    Timer _timerTemp; //温度控制计时器
+};
 } // namespace ncrapi

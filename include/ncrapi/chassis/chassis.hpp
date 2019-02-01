@@ -1,8 +1,10 @@
 #pragma once
-#include "../userDisplay/userDisplay.hpp"
-#include "api.h"
-#include "ncrapi/system/systemData.hpp"
-
+#include "ncrapi/device/adi.hpp"
+#include "ncrapi/device/motor.hpp"
+#include "ncrapi/device/vision.hpp"
+#include "ncrapi/system/object.hpp"
+#include "ncrapi/util/timer.hpp"
+#include "pros/misc.hpp"
 namespace ncrapi
 {
 constexpr int realSpeed[128] = {
@@ -21,7 +23,8 @@ class Chassis : public Obj
 {
 
   public:
-    explicit Chassis(const std::vector<pros::Motor> &motorList);
+    Chassis(const std::vector<Motor> &motorList);
+    Chassis(const json &pragma);
     void set(const int left, const int right);
 
     /**
@@ -96,7 +99,7 @@ class Chassis : public Obj
      * @param horizontalVal    左右通道
      * @param threshold 遥控器矫正阀值
      */
-    void arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int rotateMaxSpeed = 127, const int threshold = 10, const int *speedMode = realSpeed);
+    void arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode = realSpeed);
 
     void tank(pros::Controller *joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
     /**
@@ -144,8 +147,12 @@ class Chassis : public Obj
 
   protected:
     const std::string _name;
-    const std::vector<pros::Motor> _motorList;
+    std::vector<Motor> _motorList;
+    int _joyThreshold = 10, _maxRotateSpd = 127;
+
     size_t _sideNums = 0; //半边马达数量
     int _pwm[2];          //0 左边pwm 1 右边pwm
+    Timer _timerTemp;     //系统计时器
+    size_t _gearing;      //齿轮最大速度
 };
 } // namespace ncrapi

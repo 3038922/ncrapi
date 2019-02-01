@@ -1,8 +1,12 @@
 #include "ncrapi/chassis/chassis.hpp"
+#include "ncrapi/system/systemData.hpp "
+#include "ncrapi/userDisplay/userDisplay.hpp"
+#include <algorithm>
+#include <cmath>
 namespace ncrapi
 {
 
-Chassis::Chassis(const std::vector<pros::Motor> &motorList) : _motorList(motorList), _name("底盘")
+Chassis::Chassis(const std::vector<Motor> &motorList) : _motorList(motorList), _name("底盘")
 {
     _sideNums = _motorList.size() / 2;
     if (_sideNums % 2 != 0 || _sideNums == 0)
@@ -10,6 +14,22 @@ Chassis::Chassis(const std::vector<pros::Motor> &motorList) : _motorList(motorLi
     pros::delay(100);
     resetEnc();
     sysData->addObj(this);
+}
+Chassis::Chassis(const json &pragma) : _name("底盘")
+{
+    for (auto &[key, value] : pragma["马达"].items())
+        _motorList.push_back({key, value});
+
+    _joyThreshold = clamp<int>(pragma["参数"]["遥控器矫正"].get<int>(), 0, 20, "遥控器矫正");
+    _maxRotateSpd = clamp<int>(pragma["参数"]["最大旋转速度"].get<int>(), 60, 127, "最大旋转速度");
+    pros::delay(100);
+    _sideNums = _motorList.size() / 2;
+    if (_motorList.size() % 2 != 0 || _sideNums == 0)
+        sysData->addDebugData({"底盘类马达数量输入错误!半边马达数量: ", std::to_string(_sideNums)});
+    _gearing = _motorList.begin()->getGearSpeed();
+    sysData->addObj(this);
+    resetEnc();
+    std::cout << "底盘基类构造成功" << std::endl;
 }
 void Chassis::set(const int left, const int right)
 {
@@ -74,16 +94,16 @@ void Chassis::driveVector(const int distPwm, const int anglePwm, const int *spee
         right = 127 * rightSign;
     set(speedMode[abs(left)] * leftSign, speedMode[abs(right)] * rightSign);
 }
-void Chassis::arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int rotateMaxSpeed, const int threshold, const int *speedMode)
+void Chassis::arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode)
 {
     int32_t x = joy->get_analog(verticalVal);
     int32_t y = joy->get_analog(horizontalVal);
-    if (abs(x) < threshold)
+    if (abs(x) < _joyThreshold)
         x = 0;
-    if (abs(y) < threshold)
+    if (abs(y) < _joyThreshold)
         y = 0;
-    else if (abs(y) >= rotateMaxSpeed)
-        y = static_cast<int>(copysign(rotateMaxSpeed, static_cast<float>(y)));
+    else if (abs(y) >= _maxRotateSpd)
+        y = static_cast<int>(copysign(_maxRotateSpd, static_cast<float>(y)));
     driveVector(x, y, speedMode);
 }
 void Chassis::tank(pros::Controller *joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)

@@ -1,7 +1,8 @@
 #pragma once
 
+#include "json.hpp"
+#include "ncrapi/util/util.hpp"
 #include "object.hpp"
-
 #define AUTO_NUMS 5
 namespace ncrapi
 {
@@ -9,9 +10,10 @@ class SystemData
 {
 
   public:
-    DataTypeDouble _pidData;
+    json jsonVal; //根数据
     FILE *debugFile = nullptr;
-    SystemData();
+    std::string robotInfo;
+    SystemData(const json &pragam);
     //机器人初始参数
     std::vector<Obj *> obj; //存储机器人部件的名字
 
@@ -40,6 +42,8 @@ class SystemData
     void addDebugData(std::initializer_list<std::string> val);
     void showDebugData(std::string &str);
     void closeDebugData();
+    bool readSDcard();
+    bool saveData();
 };
 
 } // namespace ncrapi

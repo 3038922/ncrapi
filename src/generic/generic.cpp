@@ -1,9 +1,11 @@
 #include "ncrapi/generic/generic.hpp"
-
+#include "ncrapi/system/systemData.hpp"
+#include <algorithm>
+#include <cmath>
 namespace ncrapi
 {
 
-Generic::Generic(const std::vector<pros::Motor> &motorList, const std::string name, const int hold) : _motorList(motorList), _name(name), _holdVal(hold)
+Generic::Generic(const std::string name, const std::vector<Motor> &motorList, const int hold) : _motorList(motorList), _name(name), _holdVal(hold)
 {
     _nums = _motorList.size();
     if (_nums == 0)
@@ -20,6 +22,21 @@ Generic::Generic(const std::vector<pros::Motor> &motorList, const std::string na
     else
         std::cerr << "get gearing error" << std::endl;
     sysData->addObj(this);
+}
+Generic::Generic(const std::string &name, const json &pragma) : _name(name)
+{
+
+    for (auto &[key, value] : pragma["马达"].items())
+        _motorList.push_back({key, value});
+    _holdVal = clamp<int>(pragma["参数"]["悬停值"].get<int>(), 0, 20, "悬停值");
+    pros::delay(100);
+    _nums = _motorList.size();
+    if (_nums == 0)
+        sysData->addDebugData({"部件类马达数量不能为0"});
+    _gearing = _motorList.begin()->getGearSpeed();
+    sysData->addObj(this);
+    resetEnc();
+    std::cout << "部件 " << _name << "构造成功" << std::endl;
 }
 /**
      * 初始化函数
@@ -45,16 +62,16 @@ void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
      */
 int Generic::getPwm()
 {
-    return _pwm;
+    return _openLoopVal;
 }
 void Generic::set(const int pwm)
 {
-    _pwm = pwm;
+    _openLoopVal = pwm;
     bool temp = isSafeMode();
     if (temp)
-        _pwm = _holdVal * _holdingFlag;
+        _openLoopVal = _holdVal * _holdingFlag;
     for (auto &it : _motorList)
-        it.move(_pwm);
+        it.move(_openLoopVal);
 }
 void Generic::stop()
 {
@@ -266,7 +283,7 @@ double Generic::getTemperature()
      */
 bool Generic::isSafeMode()
 {
-    if (fabs(getSpeed()) <= _gearing / 10 && abs(_pwm) > _holdVal)
+    if (fabs(getSpeed()) <= _gearing / 10 && abs(_openLoopVal) > _holdVal)
     {
         _safeModeFlags++;
         if (_safeModeFlags > 10)
@@ -314,7 +331,7 @@ const std::string Generic::showName() const
 }
 void Generic::showDetailedInfo()
 {
-    userDisplay->ostr << _name << "pwm:" << _pwm << "\n"
+    userDisplay->ostr << _name << "pwm:" << _openLoopVal << "\n"
                       << "编码器:" << getEnc() << "速度:" << getSpeed() << "\n"
                       << "温度:" << getTemperature() << "电压:" << getVoltage() << "电流:" << getCurrent() << std::endl;
 }

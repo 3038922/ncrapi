@@ -8,7 +8,7 @@
 
 #include "ncrapi/userDisplay/userDisplay.hpp"
 #include "ncrapi/system/systemData.hpp"
-
+#include <iomanip>
 namespace ncrapi
 {
 /**

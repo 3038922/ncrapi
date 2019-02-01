@@ -1,32 +1,62 @@
 #pragma once
 #include "ncrapi/ncrapi.hpp"
-#include <cstdint>
-#include <string>
-#include <valarray>
-
-//DEMO FOR NANCY
-//用户设置
-const std::string robotInfo = "盘子机 Nancy 35216B";
-//端口配置
-//马达
-const uint8_t LF = 1;
-const bool LF_REVERSE = 1;
-const uint8_t LB = 2;
-const bool LB_REVERSE = 1;
-const uint8_t RF = 3;
-const bool RF_REVERSE = 0;
-const uint8_t RB = 4;
-const bool RB_REVERSE = 0;
-
-const uint8_t LIFT_LEFT = 5;
-const bool LIFT_LEFT_REVERSE = 0;
-const uint8_t LIFT_RIGHT = 6;
-const bool LIFT_RIGHT_REVERSE = 1;
-const uint8_t FLIPPER = 7;
-const bool FLIPPER_REVERSE = 0;
-
-const int JOY_THRESHOLD = 10; //遥控器矫正阀值
-const int ROTATE_SPEED = 127; //底盘最大旋转速度
+#define ROBOT_CAP          //盘子机
+#define READ_SD_CARD false //是否从SD卡上读取 false 从这里读取参数 true 从SD卡上读取参数
+const json userData = {
+    {"json版本号", 1.0},
+    {
+        "系统信息",
+        {
+            {"机器人类型", "盘子机"},
+            {"队伍编号", "35216B"},
+            {"用户", "Nancy"},
+        },
+    },
+    {
+        "底盘",
+        {
+            {"马达",
+             {
+                 {"左前", {{"端口", 1}, {"正反", true}, {"齿轮", 1}}},
+                 {"左后", {{"端口", 2}, {"正反", true}, {"齿轮", 1}}},
+                 {"右前", {{"端口", 3}, {"正反", false}, {"齿轮", 1}}},
+                 {"右后", {{"端口", 4}, {"正反", false}, {"齿轮", 1}}},
+             }},
+            {"参数",
+             {
+                 {"遥控器矫正", 10},
+                 {"最大旋转速度", 127},
+             }},
+        },
+    },
+    {
+        "升降",
+        {
+            {"马达",
+             {
+                 {"升降左", {{"端口", 5}, {"正反", false}, {"齿轮", 1}}},
+                 {"升降右", {{"端口", 6}, {"正反", true}, {"齿轮", 1}}},
+             }},
+            {"参数",
+             {
+                 {"悬停值", 10},
+             }},
+        },
+    },
+    {
+        "旋转器",
+        {
+            {"马达",
+             {
+                 {"夹子", {{"端口", 7}, {"正反", false}, {"齿轮", 1}}},
+             }},
+            {"参数",
+             {
+                 {"悬停值", 8},
+             }},
+        },
+    },
+};
 
 extern pros::Controller *joy1;
 extern pros::Controller *joy2;

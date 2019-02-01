@@ -10,7 +10,7 @@
 
 void opcontrol()
 {
-    userDisplay->createOpObj(robotInfo);
+    userDisplay->createOpObj(sysData->robotInfo);
     uint32_t nowTime = pros::millis();
     uint32_t lastTime = pros::millis();
 
@@ -23,9 +23,9 @@ void opcontrol()
         if (userDisplay->loopTime < userDisplay->minLoopTime)
             userDisplay->minLoopTime = userDisplay->loopTime;
         //demo for nancy
-        chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X, ROTATE_SPEED, JOY_THRESHOLD); //底盘遥控
-        lift->joyControl(joy1, DIGITAL_L1, DIGITAL_L2);                                    //升降
-        flipper->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);                                 //旋转器
+        chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X); //底盘遥控
+        lift->joyControl(joy1, DIGITAL_L1, DIGITAL_L2);       //升降
+        flipper->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);    //旋转器
         //demo for nancy
         lastTime = nowTime;
         pros::c::task_delay_until(&nowTime, 10);

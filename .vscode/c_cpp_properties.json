@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "vex",
+            "includePath": [
+                "${env:PROS_TOOLCHAIN}/arm-none-eabi/include",
+                "${env:PROS_TOOLCHAIN}/lib/gcc/arm-none-eabi/8.2.1/include",
+                "${workspaceRoot}",
+                "${workspaceRoot}/include"
+            ],
+            "defines": [
+                "_POSIX_THREADS",
+                "_UNIX98_THREAD_MUTEX_ATTRIBUTES"
+            ],
+            "limitSymbolsToIncludedHeaders": true,
+            "databaseFilename": ""
+        }
+    ],
+    "version": 4
+}

@@ -24,10 +24,12 @@
 
 #include <cstdint>
 
-namespace pros {
-class Vision {
-	public:
-	/**
+namespace pros
+{
+class Vision
+{
+  public:
+    /**
 	 * Create a Vision Sensor object on the given port.
 	 *
 	 * \param port
@@ -35,9 +37,9 @@ class Vision {
 	 * \param zero_point
 	 *        One of vision_zero_e_t to set the (0,0) coordinate for the FOV
 	 */
-	Vision(std::uint8_t port, vision_zero_e_t zero_point = E_VISION_ZERO_TOPLEFT);
+    Vision(std::uint8_t port, vision_zero_e_t zero_point = E_VISION_ZERO_TOPLEFT);
 
-	/**
+    /**
 	 * Clears the vision sensor LED color, reseting it back to its default
 	 * behavior, displaying the most prominent object signature color.
 	 *
@@ -48,9 +50,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t clear_led(void) const;
+    std::int32_t clear_led(void) const;
 
-	/**
+    /**
 	 * Creates a signature from the vision sensor utility
 	 *
 	 * \param id
@@ -74,13 +76,13 @@ class Vision {
 	 *
 	 * \return A vision_signature_s_t that can be set using Vision::set_signature
 	 */
-	static vision_signature_s_t signature_from_utility(const std::int32_t id, const std::int32_t u_min,
-	                                                   const std::int32_t u_max, const std::int32_t u_mean,
-	                                                   const std::int32_t v_min, const std::int32_t v_max,
-	                                                   const std::int32_t v_mean, const float range,
-	                                                   const std::int32_t type);
+    static vision_signature_s_t signature_from_utility(const std::int32_t id, const std::int32_t u_min,
+                                                       const std::int32_t u_max, const std::int32_t u_mean,
+                                                       const std::int32_t v_min, const std::int32_t v_max,
+                                                       const std::int32_t v_mean, const float range,
+                                                       const std::int32_t type);
 
-	/**
+    /**
 	 * Creates a color code that represents a combination of the given signature
 	 * IDs.
 	 *
@@ -102,11 +104,11 @@ class Vision {
 	 *
 	 * \return A vision_color_code_t object containing the color code information.
 	 */
-	vision_color_code_t create_color_code(const std::uint32_t sig_id1, const std::uint32_t sig_id2,
-	                                      const std::uint32_t sig_id3 = 0, const std::uint32_t sig_id4 = 0,
-	                                      const std::uint32_t sig_id5 = 0) const;
+    vision_color_code_t create_color_code(const std::uint32_t sig_id1, const std::uint32_t sig_id2,
+                                          const std::uint32_t sig_id3 = 0, const std::uint32_t sig_id4 = 0,
+                                          const std::uint32_t sig_id5 = 0) const;
 
-	/**
+    /**
 	 * Gets the nth largest object according to size_id.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -122,9 +124,9 @@ class Vision {
 	 * \return The vision_object_s_t object corresponding to the given size id, or
 	 * PROS_ERR if an error occurred.
 	 */
-	vision_object_s_t get_by_size(const std::uint32_t size_id) const;
+    vision_object_s_t get_by_size(const std::uint32_t size_id) const;
 
-	/**
+    /**
 	 * Gets the nth largest object of the given signature according to size_id.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -143,9 +145,9 @@ class Vision {
 	 * \return The vision_object_s_t object corresponding to the given signature
 	 * and size_id, or PROS_ERR if an error occurred.
 	 */
-	vision_object_s_t get_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id) const;
+    vision_object_s_t get_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id) const;
 
-	/**
+    /**
 	 * Gets the nth largest object of the given color code according to size_id.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -162,9 +164,9 @@ class Vision {
 	 * \return The vision_object_s_t object corresponding to the given color code
 	 * and size_id, or PROS_ERR if an error occurred.
 	 */
-	vision_object_s_t get_by_code(const std::uint32_t size_id, const vision_color_code_t color_code) const;
+    vision_object_s_t get_by_code(const std::uint32_t size_id, const vision_color_code_t color_code) const;
 
-	/**
+    /**
 	 * Gets the exposure parameter of the Vision Sensor. See
 	 * https://pros.cs.purdue.edu/v5/tutorials/topical/vision.html#exposure-setting
 	 * for more detials.
@@ -176,9 +178,9 @@ class Vision {
 	 * \return The current exposure parameter from [0,150],
 	 * PROS_ERR if an error occurred
 	 */
-	std::int32_t get_exposure(void) const;
+    std::int32_t get_exposure(void) const;
 
-	/**
+    /**
 	 * Gets the number of objects currently detected by the Vision Sensor.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -188,9 +190,9 @@ class Vision {
 	 * \return The number of objects detected on the specified vision sensor.
 	 * Returns PROS_ERR if the port was invalid or an error occurred.
 	 */
-	std::int32_t get_object_count(void) const;
+    std::int32_t get_object_count(void) const;
 
-	/**
+    /**
 	 * Gets the object detection signature with the given id number.
 	 *
 	 * \param signature_id
@@ -198,9 +200,9 @@ class Vision {
 	 *
 	 * \return A vision_signature_s_t containing information about the signature.
 	 */
-	vision_signature_s_t get_signature(const std::uint8_t signature_id) const;
+    vision_signature_s_t get_signature(const std::uint8_t signature_id) const;
 
-	/**
+    /**
 	 * Get the white balance parameter of the Vision Sensor.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -209,9 +211,9 @@ class Vision {
 	 *
 	 * \return The current RGB white balance setting of the sensor
 	 */
-	std::int32_t get_white_balance(void) const;
+    std::int32_t get_white_balance(void) const;
 
-	/**
+    /**
 	 * Reads up to object_count object descriptors into object_arr.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -233,10 +235,10 @@ class Vision {
 	 * than size_id were found. All objects in object_arr that were not found are
 	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-	std::int32_t read_by_size(const std::uint32_t size_id, const std::uint32_t object_count,
-	                          vision_object_s_t* const object_arr) const;
+    std::int32_t read_by_size(const std::uint32_t size_id, const std::uint32_t object_count,
+                              vision_object_s_t *const object_arr) const;
 
-	/**
+    /**
 	 * Reads up to object_count object descriptors into object_arr.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -262,10 +264,10 @@ class Vision {
 	 * than size_id were found. All objects in object_arr that were not found are
 	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-	std::int32_t read_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id, const std::uint32_t object_count,
-	                         vision_object_s_t* const object_arr) const;
+    std::int32_t read_by_sig(const std::uint32_t size_id, const std::uint32_t sig_id, const std::uint32_t object_count,
+                             vision_object_s_t *const object_arr) const;
 
-	/**
+    /**
 	 * Reads up to object_count object descriptors into object_arr.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -289,10 +291,10 @@ class Vision {
 	 * than size_id were found. All objects in object_arr that were not found are
 	 * given VISION_OBJECT_ERR_SIG as their signature.
 	 */
-	int32_t read_by_code(const std::uint32_t size_id, const vision_color_code_t color_code,
-	                     const std::uint32_t object_count, vision_object_s_t* const object_arr) const;
+    int32_t read_by_code(const std::uint32_t size_id, const vision_color_code_t color_code,
+                         const std::uint32_t object_count, vision_object_s_t *const object_arr) const;
 
-	/**
+    /**
 	 * Prints the contents of the signature as an initializer list to the terminal.
 	 *
 	 * \param sig
@@ -300,9 +302,9 @@ class Vision {
 	 *
 	 * \return 1 if no errors occured, PROS_ERR otherwise
 	 */
-	static std::int32_t print_signature(const vision_signature_s_t sig);
+    static std::int32_t print_signature(const vision_signature_s_t sig);
 
-	/**
+    /**
 	 * Enables/disables auto white-balancing on the Vision Sensor.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -315,9 +317,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_auto_white_balance(const std::uint8_t enable) const;
+    std::int32_t set_auto_white_balance(const std::uint8_t enable) const;
 
-	/**
+    /**
 	 * Sets the exposure parameter of the Vision Sensor. See
 	 * https://pros.cs.purdue.edu/v5/tutorials/topical/vision.html#exposure-setting
 	 * for more detials.
@@ -332,9 +334,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_exposure(const std::uint8_t exposure) const;
+    std::int32_t set_exposure(const std::uint8_t exposure) const;
 
-	/**
+    /**
 	 * Sets the vision sensor LED color, overriding the automatic behavior.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -347,9 +349,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_led(const std::int32_t rgb) const;
+    std::int32_t set_led(const std::int32_t rgb) const;
 
-	/**
+    /**
 	 * Stores the supplied object detection signature onto the vision sensor.
 	 *
 	 * NOTE: This saves the signature in volatile memory, and the signature will be
@@ -362,9 +364,9 @@ class Vision {
 	 *
 	 * \return 1 if no errors occured, PROS_ERR otherwise
 	 */
-	std::int32_t set_signature(const std::uint8_t signature_id, vision_signature_s_t* const signature_ptr) const;
+    std::int32_t set_signature(const std::uint8_t signature_id, vision_signature_s_t *const signature_ptr) const;
 
-	/**
+    /**
 	 * Sets the white balance parameter of the Vision Sensor.
 	 *
 	 * This function uses the following values of errno when an error state is
@@ -377,9 +379,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_white_balance(const std::int32_t rgb) const;
+    std::int32_t set_white_balance(const std::int32_t rgb) const;
 
-	/**
+    /**
 	 * Sets the (0,0) coordinate for the Field of View.
 	 *
 	 * This will affect the coordinates returned for each request for a
@@ -396,9 +398,9 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_zero_point(vision_zero_e_t zero_point) const;
+    std::int32_t set_zero_point(vision_zero_e_t zero_point) const;
 
-	/**
+    /**
 	 * Sets the Wi-Fi mode of the Vision sensor
 	 *
 	 * This functions uses the following values of errno when an error state is
@@ -412,10 +414,10 @@ class Vision {
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
-	std::int32_t set_wifi_mode(const std::uint8_t enable) const;
+    std::int32_t set_wifi_mode(const std::uint8_t enable) const;
 
-	private:
-	std::uint8_t _port;
+  private:
+    std::uint8_t _port;
 };
-}  // namespace pros
-#endif  // _PROS_VISION_HPP_
+} // namespace pros
+#endif // _PROS_VISION_HPP_

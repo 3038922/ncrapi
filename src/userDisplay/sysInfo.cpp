@@ -7,6 +7,7 @@
  */
 #include "ncrapi/system/systemData.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
+#include <iomanip>
 static void sysInfoTask(void *param)
 {
     (void)param; /*Unused*/
