@@ -1,11 +1,11 @@
 {
     "py/object": "pros.conductor.project.Project",
     "py/state": {
-        "project_name": "ncrapi",
+        "project_name": "turingPointV5",
         "target": "v5",
         "templates": {
             "kernel": {
-                "location": "C:\\Users\\35807\\AppData\\Roaming\\PROS\\templates\\kernel@3.1.5",
+                "location": "C:\\Users\\aresp\\AppData\\Roaming\\PROS\\templates\\kernel@3.1.5",
                 "metadata": {
                     "origin": "pros-mainline",
                     "output": "bin/output.bin"
@@ -119,7 +119,7 @@
                 "version": "3.1.5"
             },
             "okapilib": {
-                "location": "C:\\Users\\35807\\AppData\\Roaming\\PROS\\templates\\okapilib@3.3.8",
+                "location": "C:\\Users\\aresp\\AppData\\Roaming\\PROS\\templates\\okapilib@3.3.8",
                 "metadata": {
                     "origin": "pros-mainline"
                 },
