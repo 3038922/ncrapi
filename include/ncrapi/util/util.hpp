@@ -31,7 +31,7 @@ T clamp(const T &val, const T min, const T max, std::string_view name)
     }
     else if (val > max)
     {
-        temp = min;
+        temp = max;
         std::cerr << name << "超限,已设置为最大值:" << max << std::endl;
     }
     return temp;
