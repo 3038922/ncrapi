@@ -326,10 +326,6 @@ lv_res_t UserDisplay::closeAction(lv_obj_t *btn)
     }
     if (sysData->isOPcontrol == false)
         sysData->isOPcontrol = true;
-    if (sysData->pidTest != 0)
-        sysData->pidTest = 0;
-    if (!sysData->pidDebugData.empty()) //如果不为空 择清零
-        sysData->pidDebugData.clear();
     return LV_RES_INV;
 }
 lv_res_t UserDisplay::resetAction(lv_obj_t *btn)

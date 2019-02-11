@@ -3,6 +3,7 @@
 #include "ncrapi/userDisplay/userDisplay.hpp"
 #include <algorithm>
 #include <cmath>
+
 namespace ncrapi
 {
 
@@ -94,7 +95,7 @@ void Chassis::driveVector(const int distPwm, const int anglePwm, const int *spee
         right = 127 * rightSign;
     set(speedMode[abs(left)] * leftSign, speedMode[abs(right)] * rightSign);
 }
-void Chassis::arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode)
+void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode)
 {
     int32_t x = joy->get_analog(verticalVal);
     int32_t y = joy->get_analog(horizontalVal);
@@ -106,7 +107,7 @@ void Chassis::arcade(pros::Controller *joy, pros::controller_analog_e_t vertical
         y = static_cast<int>(copysign(_maxRotateSpd, static_cast<float>(y)));
     driveVector(x, y, speedMode);
 }
-void Chassis::tank(pros::Controller *joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)
+void Chassis::tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)
 {
     int32_t l = joy->get_analog(left);
     int32_t r = joy->get_analog(right);

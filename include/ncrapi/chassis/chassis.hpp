@@ -5,6 +5,7 @@
 #include "ncrapi/system/object.hpp"
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
+#include <memory>
 namespace ncrapi
 {
 constexpr int realSpeed[128] = {
@@ -99,9 +100,9 @@ class Chassis : public Obj
      * @param horizontalVal    左右通道
      * @param threshold 遥控器矫正阀值
      */
-    void arcade(pros::Controller *joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode = realSpeed);
+    void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode = realSpeed);
 
-    void tank(pros::Controller *joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
+    void tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
     /**
      * 重置底盘所有马达编码器
      */

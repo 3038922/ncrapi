@@ -1,5 +1,4 @@
 #pragma once
-#include "misc.hpp"
 #include "ncrapi/device/motor.hpp"
 #include "ncrapi/system/json.hpp"
 #include "ncrapi/system/object.hpp"
@@ -7,16 +6,18 @@
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
-namespace ncrapi {
+namespace ncrapi
+{
 /**
  * 机器人功能基础类 开环控制
  * @param a    马达对象
  * @param hold 悬停值
  */
-class Generic : public Obj, public Misc
+class Generic : public Obj
 {
 
   public:
+    Generic(const std::string name, const std::vector<Motor> &motorList, const int hold);
     Generic(const std::string &name, const json &pragma);
     /**
      * 初始化函数

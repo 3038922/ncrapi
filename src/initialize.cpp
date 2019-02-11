@@ -8,26 +8,23 @@
 
 #include "main.hpp"
 //全局变量和类
-ncrapi::SystemData *sysData;      //系统数据类
-ncrapi::UserDisplay *userDisplay; //图像数据类
 
+std::unique_ptr<ncrapi::SystemData> sysData = nullptr;      //系统数据类
+std::unique_ptr<ncrapi::UserDisplay> userDisplay = nullptr; //图像数据类
 //全局初始化构造函数
 //部件类初始化
 //demo for nancy
-pros::Controller *joy1; //主遥控器
-pros::Controller *joy2; //副遥控器
-
-ncrapi::Chassis *chassis; //底盘
-ncrapi::Generic *lift;    //升降
-ncrapi::Generic *flipper; //旋转器
-
+std::shared_ptr<pros::Controller> joy1;
+std::shared_ptr<ncrapi::Chassis> chassis;
+std::shared_ptr<ncrapi::Generic> lift;
+std::shared_ptr<ncrapi::Generic> flipper;
 //消息框动作函数
 lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
 {
     if (!strcmp(txt, "红方"))
     {
-        sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->autoSide = 0;   //红方0
+        // sysData->autoIsMode = 0; //普通自动赛模式
+        sysData->autoSide = 0; //红方0
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_RED;
         userDisplay->mainStyle.body.main_color = LV_COLOR_RED;
@@ -36,7 +33,7 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
     }
     if (!strcmp(txt, "蓝方"))
     {
-        sysData->autoIsMode = 0; //普通自动赛模式
+        //   sysData->autoIsMode = 0; //普通自动赛模式
         sysData->autoSide = 360; //蓝方360
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_BLUE;
@@ -53,18 +50,17 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
 
 void initialize()
 { //系统初始化
-    sysData = new ncrapi::SystemData(userData);
+    sysData = std::make_unique<ncrapi::SystemData>(userData);
     //显示初始化
-    userDisplay = new ncrapi::UserDisplay;
+    userDisplay = std::make_unique<ncrapi::UserDisplay>();
     userDisplay->createMbox(OBJ_BTNM_SON, "请选择红蓝方(默认红方)", "红方", "蓝方", choseSideAction);
     lv_obj_t *lab1 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
     //遥控器初始化
     lv_label_set_text(lab1, "遥控器初始化中...");
-    joy1 = new pros::Controller(CONTROLLER_MASTER);  //主遥控器
-    joy2 = new pros::Controller(CONTROLLER_PARTNER); //副遥控器
+    joy1 = std::make_shared<pros::Controller>(CONTROLLER_MASTER); //主遥控器
     //显示用户信息
     lv_obj_t *lab2 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
-    lv_obj_set_y(lab2, 30);
+    lv_obj_set_y(lab2, 20);
     std::string temp = sysData->robotInfo;
     temp += "\n版本号:";
     temp += NCR_VERSION_STRING;
@@ -72,14 +68,14 @@ void initialize()
 
     //demo for nancy
     lv_label_set_text(lab1, "底盘初始化中...");
-    chassis = new ncrapi::Chassis(sysData->jsonVal["底盘"]);
+    chassis = std::make_shared<ncrapi::Chassis>(sysData->jsonVal["底盘"]);
     pros::delay(1000);
     lv_label_set_text(lab1, "升降初始化中...");
-    lift = new ncrapi::Generic("升降", sysData->jsonVal["升降"]);
+    lift = std::make_shared<ncrapi::Generic>("升降", sysData->jsonVal["升降"]);
     pros::delay(1000);
 
     lv_label_set_text(lab1, "旋转器初始化中...");
-    flipper = new ncrapi::Generic("旋转器", sysData->jsonVal["旋转器"]); //旋转器
+    flipper = std::make_shared<ncrapi::Generic>("旋转器", sysData->jsonVal["旋转器"]); //旋转器
     pros::delay(1000);
     //demo for nancy
     lv_label_set_text(lab1, "机器人初始化完毕...");

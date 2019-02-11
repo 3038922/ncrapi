@@ -58,9 +58,8 @@ const json userData = {
     },
 };
 
-extern pros::Controller *joy1;
-extern pros::Controller *joy2;
-extern ncrapi::Chassis *chassis;
-extern ncrapi::Generic *lift;
-extern ncrapi::Generic *flipper;
+extern std::shared_ptr<pros::Controller> joy1;
+extern std::shared_ptr<ncrapi::Chassis> chassis;
+extern std::shared_ptr<ncrapi::Generic> lift;
+extern std::shared_ptr<ncrapi::Generic> flipper;
 //demo for nancy

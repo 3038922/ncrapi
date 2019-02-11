@@ -7,12 +7,12 @@ namespace ncrapi
 {
 class SystemData
 {
-    using PidDebugTuple = std::tuple<uint32_t, double, double, double, double, double>; //PIDDATA的类型
 
   public:
+    //综合参数
+    std::string robotInfo;
     json jsonVal; //根数据
     //PID参数数据
-    std::vector<PidDebugTuple> pidDebugData; //PID DEBUG数据
     FILE *debugFile = nullptr;
 
     SystemData(const json &pragam);
