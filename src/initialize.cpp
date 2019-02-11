@@ -19,7 +19,9 @@ pros::Controller *joy2; //副遥控器
 
 ncrapi::Chassis *chassis; //底盘
 ncrapi::Generic *lift;    //升降
-ncrapi::Generic *flipper; //旋转器
+ncrapi::Generic *claw; //旋转器
+ncrapi::Generic *ballintake; //旋转器
+ncrapi::Generic *catapult; //旋转器
 
 //消息框动作函数
 lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)

@@ -13,6 +13,14 @@ const json userData = {
         },
     },
     {
+      "自动赛",
+      {
+        {"前场&后场", false},
+        {"高旗&中旗", false},
+        {"不开台", false},
+      },
+    },
+    {
         "底盘",
         {
             {"马达",
@@ -62,5 +70,7 @@ extern pros::Controller *joy1;
 extern pros::Controller *joy2;
 extern ncrapi::Chassis *chassis;
 extern ncrapi::Generic *lift;
-extern ncrapi::Generic *flipper;
+extern ncrapi::Generic *claw;
+extern ncrapi::Generic *ballintake;
+extern ncrapi::Generic *catapult;
 //demo for nancy
