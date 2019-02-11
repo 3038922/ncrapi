@@ -16,8 +16,7 @@ static lv_res_t clearAction(lv_obj_t *btn)
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
     return LV_RES_INV;
 }
-namespace ncrapi
-{
+namespace ncrapi {
 void UserDisplay::createDebug(lv_obj_t *parent)
 {
 
@@ -25,8 +24,12 @@ void UserDisplay::createDebug(lv_obj_t *parent)
     std::string debugStr;
     sysData->showDebugData(debugStr);
     debugLab = lv_label_create(displayObj[OBJ_BTNM_SON], nullptr);
-    lv_label_set_long_mode(debugLab, LV_LABEL_LONG_EXPAND);
+
+    lv_obj_set_y(debugLab, 10);
+    lv_label_set_long_mode(debugLab, LV_LABEL_LONG_ROLL);
+    lv_label_set_anim_speed(debugLab, 1);
     lv_label_set_text(debugLab, debugStr.c_str());
+    lv_obj_set_size(debugLab, LV_HOR_RES - 30, LV_VER_RES - 20);
 
     //创建清空按钮
     lv_obj_t *clearBtn = lv_btn_create(displayObj[OBJ_BTNM_SON], nullptr);

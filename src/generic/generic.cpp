@@ -4,7 +4,11 @@
 #include <cmath>
 namespace ncrapi
 {
-
+/**
+ * 机器人功能基础类 开环控制
+ * @param a    马达对象
+ * @param hold 悬停值
+ */
 Generic::Generic(const std::string name, const std::vector<Motor> &motorList, const int hold) : _motorList(motorList), _name(name), _holdVal(hold)
 {
     _nums = _motorList.size();
@@ -50,28 +54,44 @@ void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
     for (auto &it : _motorList)
         it.move(pwm);
     pros::delay(500);
-    while (getSpeed() != 0)
+    while ((_encNow != _encLast) && _encLast != 0)
         pros::delay(20);
     for (auto &it : _motorList)
         it.move(0);
     resetEnc();
+    _isInit = true;
 }
+
 /**
-     *获取占空比 
-     * @return int +-127; 
+     * 普通的占空比控制  开环
+     * @param pwm 占空比+-127
      */
-int Generic::getPwm()
-{
-    return _openLoopVal;
-}
 void Generic::set(const int pwm)
 {
-    _openLoopVal = pwm;
-    bool temp = isSafeMode();
-    if (temp)
+    _encLast = _encNow;
+    _openLoopVal = std::clamp(pwm, -127, 127);
+    if (isSafeMode())
         _openLoopVal = _holdVal * _holdingFlag;
     for (auto &it : _motorList)
         it.move(_openLoopVal);
+    if (getTemperature() >= 50 && _timerTemp.getDtFromMark() >= 15000)
+    {
+        sysData->addDebugData({_name, ":马达过热!"});
+        _timerTemp.placeMark();
+    }
+    _encNow = getEnc();
+}
+/**
+     * 普通的电压控制 开环     
+     * @param vol +-120
+     */
+void Generic::moveVoltage(const double vol)
+{
+    _openLoopVal = static_cast<int>(vol);
+    if (isSafeMode())
+        _openLoopVal = _holdVal * _holdingFlag;
+    for (auto &it : _motorList)
+        it.move_voltage(static_cast<int32_t>(_openLoopVal * 100));
 }
 void Generic::stop()
 {
@@ -129,7 +149,6 @@ void Generic::moveVelocity(const std::int32_t velocity)
 }
 void Generic::holding()
 {
-
     if (_mode == 1)
     {
         set(127);
@@ -163,9 +182,9 @@ int Generic::getMode()
 {
     return _mode;
 }
-void Generic::joyControl(pros::Controller *joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down)
-{
 
+void Generic::joyControl(std::shared_ptr<pros::Controller> joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down)
+{
     if (joy->get_digital(up))
     {
         set(127);
@@ -189,6 +208,21 @@ void Generic::resetEnc()
     for (auto &it : _motorList)
         it.tare_position();
 }
+/**
+    * 重置马达编码器
+    */
+void Generic::setEnc(const double pos)
+{
+    for (auto &it : _motorList)
+        it.set_zero_position(pos);
+}
+/**
+ * @brief 设置编码器值
+ * 
+ * @param pos 要设置的值
+ */
+
+void setEnc(int pos);
 /**
      * 获取编码器值
      * @return 弹射编码器的值
@@ -288,7 +322,7 @@ bool Generic::isSafeMode()
         _safeModeFlags++;
         if (_safeModeFlags > 10)
         {
-            std::cerr << _name << ":isSafeMode" << std::endl;
+            sysData->addDebugData({_name, ":进入热保模式!请注意操作"});
             return true;
         }
         else
@@ -314,6 +348,7 @@ void Generic::resetAllSensors()
      */
 void Generic::setBrakeMode(pros::motor_brake_mode_e_t mode)
 {
+    std::cout << "设置" << _name << "马达制动模式" << mode << std::endl;
     for (auto &it : _motorList)
         it.set_brake_mode(mode);
 }

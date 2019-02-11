@@ -5,15 +5,11 @@
  * @Last modified by:   陈昱安
  * @Last modified time: 2018-09-08T22:37:58+08:00
  */
-#include "ncrapi/util/timer.hpp"
-namespace ncrapi
-{
 
-Timer::Timer() : firstCalled(pros::millis()),
-                 lastCalled(0),
-                 mark(0),
-                 hardMark(-1),
-                 repeatMark(-1) {}
+#include "ncrapi/util/timer.hpp"
+namespace ncrapi {
+
+Timer::Timer() : firstCalled(pros::millis()), lastCalled(0), mark(0), hardMark(-1), repeatMark(-1) {}
 
 /**
      * 返回自上次调用此函数以来以ms为单位传递的时间。

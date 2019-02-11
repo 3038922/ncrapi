@@ -1,4 +1,5 @@
 #pragma once
+#include "misc.hpp"
 #include "ncrapi/device/motor.hpp"
 #include "ncrapi/system/json.hpp"
 #include "ncrapi/system/object.hpp"
@@ -6,21 +7,17 @@
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 /**
  * 机器人功能基础类 开环控制
  * @param a    马达对象
  * @param hold 悬停值
  */
-
-class Generic : public Obj
+class Generic : public Obj, public Misc
 {
 
   public:
     Generic(const std::string &name, const json &pragma);
-
-    Generic(const std::string name, const std::vector<Motor> &motorList, const int hold = 0);
     /**
      * 初始化函数
      * @param lab 进度条 
@@ -28,12 +25,17 @@ class Generic : public Obj
      * @param pwm 占空比
      */
     void init(lv_obj_t *lab, const char *str, const int pwm);
+
     /**
-     *获取占空比 
-     * @return int +-127; 
+     * 普通的占空比控制  开环
+     * @param pwm 占空比+-127
      */
-    int getPwm();
     virtual void set(const int pwm);
+    /**
+     * 普通的电压控制 开环     
+     * @param vol +-120
+     */
+    virtual void moveVoltage(const double vol);
     virtual void stop() override;
     /**
     *设置要移动到的电机的目标绝对位置。
@@ -81,11 +83,17 @@ class Generic : public Obj
      * @return 1是系统正转状态 0悬停状态 -1 是系统反转状态
      */
     virtual int getMode();
-    virtual void joyControl(pros::Controller *joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down);
+    virtual void joyControl(std::shared_ptr<pros::Controller> joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down);
     /**
     * 重置马达编码器
     */
     virtual void resetEnc();
+    /**
+ * @brief 设置编码器当前值
+ * 
+ * @param pos 要设置的值
+ */
+    virtual void setEnc(const double pos);
     /**
      * 获取编码器值
      * @return 弹射编码器的值
@@ -162,8 +170,10 @@ class Generic : public Obj
     size_t _nums = 0; //马达总数
     Timer _timer;     //系统计时器
     bool _isInit = false;
+    double _encNow = 0;
+    double _encLast = 0;
 
   private:
     Timer _timerTemp; //温度控制计时器
-};
+};                    // namespace ncrapi
 } // namespace ncrapi

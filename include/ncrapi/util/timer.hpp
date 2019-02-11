@@ -8,8 +8,7 @@
 
 #pragma once
 #include "pros/rtos.hpp"
-namespace ncrapi
-{
+namespace ncrapi {
 class Timer
 {
 
@@ -27,7 +26,6 @@ class Timer
      * @return uint32_t 返回当前时间
      */
     uint32_t getNowTime() const;
-
     /**
      * 返回构造计时器的时间（以毫秒为单位）。
      * @返回构造计时器的时间（以毫秒为单位）。
@@ -62,7 +60,6 @@ class Timer
      * @返回自标记放置以来的毫秒数。
      */
     uint32_t getDtFromMark() const;
-
     /**
      *放置硬标记后，以毫秒为单位返回时间。
      * @放置硬标记后，以毫秒为单位返回时间。

@@ -7,8 +7,11 @@
  */
 
 #include "ncrapi/userDisplay/userDisplay.hpp"
+//#include "ncrapi/autonomous/auto.hpp"
 #include "ncrapi/system/systemData.hpp"
+#include "pros/misc.hpp"
 #include <iomanip>
+
 namespace ncrapi
 {
 /**
@@ -26,6 +29,9 @@ UserDisplay::UserDisplay()
     theme->tabview.indic->body.padding.inner = 1;
     theme->tabview.btn.rel->text.font = &ncrfont10; //重新设置字体
     theme->tabview.btn.rel->body.padding.ver = 5;   //释放按钮的垂直填充应用于所有按钮
+    // theme->tabview.bg->body.padding.ver = 5;
+    // theme->tabview.bg->body.border.width = 0;
+    // theme->tabview.bg->text.line_space = 1;
     //全局样式
     lv_style_copy(&mainStyle, &lv_style_pretty_color); //拷贝当前按钮样式
     mainStyle.body.main_color = LV_COLOR_BLACK;        //全局背影黑色
@@ -42,6 +48,7 @@ UserDisplay::UserDisplay()
     //应用全局样式
     lv_obj_set_style(displayObj[OBJ_BTNM_SON], &mainStyle); /*设置Surand系统主题*/
     lv_theme_set_current(theme);
+    std::cout << "图像类构造成功" << std::endl;
 }
 /**
  *自定义类创建 
@@ -71,10 +78,10 @@ void UserDisplay::createUserObj(obj_flag objname, bool isSrcLoad, const char *te
             createExitBtn(objname);
         }
 
-        std::cout << "obj:" << terminalText << " create successful" << std::endl;
+        std::cout << "图像类:" << terminalText << " 构造成功" << std::endl;
     }
     else
-        std::cerr << "obj:" << terminalText << " already exist" << std::endl;
+        std::cerr << "图像类:" << terminalText << " 已存在" << std::endl;
 
     if (labText != nullptr)
     {
@@ -94,11 +101,11 @@ void UserDisplay::createUserTask(task_flag taskName, void (*task)(void *), uint3
     if (displayTask[taskName] == nullptr)
     {
         displayTask[taskName] = lv_task_create(task, loopTime, LV_TASK_PRIO_LOW, nullptr);
-        std::cout << "task:" << terminalText << " create successful" << std::endl;
+        std::cout << "图像类线程:" << terminalText << " 构造成功" << std::endl;
     }
     else
     {
-        std::cout << "task:" << terminalText << " already exist" << std::endl;
+        std::cout << "图像类线程:" << terminalText << " 构造成功" << std::endl;
     }
 }
 /**
@@ -113,7 +120,7 @@ void UserDisplay::delTasks()
         {
             lv_task_del(it);
             it = nullptr;
-            std::cout << "del task:" << flag << std::endl;
+            std::cout << "删除图像类线程:" << flag << " 个" << std::endl;
             flag++;
         }
     }
@@ -130,7 +137,7 @@ void UserDisplay::delObjs()
         {
             lv_obj_del(it);
             it = nullptr;
-            std::cout << "del Obj:" << flag << std::endl;
+            std::cout << "删除图像类:" << flag << " 个" << std::endl;
             flag++;
         }
     }
@@ -153,9 +160,9 @@ static void loopTask(void *param)
 void UserDisplay::createOpObj(const std::string &userInfo)
 {
     delTasks();
-    createUserTask(TASK_LOOP, loopTask, 100, "loopLab");
+    createUserTask(TASK_LOOP, loopTask, 100, "循环时间条");
     delObjs();
-    createUserObj(OBJ_OPCONTROL, true, "opControl");
+    createUserObj(OBJ_OPCONTROL, true, "遥控");
     if (!pros::competition::is_connected()) //没插场控
         createStartObj();
 
@@ -182,25 +189,32 @@ static void sensorsTask(void *param)
  * @param  btn 要实现动作的按钮的指针
  * @return     返回不知道啥....
  */
-static std::array<lv_obj_t *, AUTO_NUMS> compSw;
+static std::vector<std::pair<lv_obj_t *, lv_obj_t *>> compSw;
 static lv_res_t confirmBtnIncomp(lv_obj_t *btn)
 {
     int i = 0;
     //获取开关状态
-    for (auto &it : sysData->autoFlags)
-    {
-        it = lv_sw_get_state(compSw[i]);
-        i++;
-    }
-
     std::string str;
     sysData->autoSide == 0 ? str += "红方\n" : str += "蓝方\n";
-    sysData->autoFlags[AUTO_FR] == 0 ? str += "前场\n" : str += "后场\n";
-    sysData->autoFlags[AUTO_SHOOT] == 0 ? str += "射高旗\n" : str += "射中旗\n";
-    sysData->autoFlags[AUTO_MID_SHOOT] == 0 ? str += "不二次射旗\n" : str += "二次射旗\n";
-    sysData->autoFlags[AUTO_PLATFORM] == 0 ? str += "不开台\n" : str += "开台\n";
-    sysData->autoFlags[AUTO_BUMPERFLAG] == 0 ? str += "不二次撞旗\n" : str += "二次撞旗\n";
-    //创建确认页面
+    for (auto &it : compSw)
+    {
+        std::string tempStr = lv_label_get_text(it.first);
+        sysData->jsonVal["自动赛"][tempStr] = lv_sw_get_state(it.second);
+
+        auto pos = tempStr.find("&"); //查找间隔符号
+        if (pos != std::string::npos)
+        {
+            if (lv_sw_get_state(it.second))
+                tempStr.erase(0, pos + 1);
+            else
+                tempStr.erase(pos, tempStr.length());
+            str += (tempStr + "\n");
+        }
+        else
+            sysData->addDebugData({"自动赛json选项设置错误 请用&间隔"});
+        i++;
+    }
+    // 创建确认页面
     userDisplay->createUserObj(OBJ_CONFIRM, true, "obj_confirm");
     //显示自动赛选项
     lv_obj_t *autoinfoLab = lv_label_create(userDisplay->displayObj[OBJ_CONFIRM], nullptr); //创建LAB条
@@ -227,72 +241,68 @@ static void tabChose(lv_obj_t *tab, uint16_t x)
 {
     if (x == 0)
     {
-        sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->autoSide = 0;   //红方0
+        //sysData->autoIsMode = 0; //普通自动赛模式
+        sysData->autoSide = 0; //红方0
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
     }
     else if (x == 1)
     {
-        sysData->autoIsMode = 0; //普通自动赛模式
+        //  sysData->autoIsMode = 0; //普通自动赛模式
         sysData->autoSide = 360; //蓝方360
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
     }
-    else if (x == 2)
-    {
-        sysData->autoIsMode = 1; //纯自动
-        sysData->autoSide = 0;   //技能赛默认红方
-        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLACK;
-    }
+    // else if (x == 2)
+    // {
+    //     sysData->autoIsMode = 1; //纯自动
+    //     sysData->autoSide = 0;   //技能赛默认红方
+    //     userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLACK;
+    // }
 }
 void UserDisplay::createCompe()
 {
     delTasks();
     delObjs();
-    createUserObj(OBJ_COMPETITION, true, "obj_competition");
+    createUserObj(OBJ_COMPETITION, true, "竞赛等待");
     //创建标签栏
     lv_obj_t *tab = lv_tabview_create(displayObj[OBJ_COMPETITION], nullptr);
-
-    lv_obj_set_size(tab, LV_HOR_RES, LV_VER_RES);      //设置位置
-    theme->tabview.bg->body.main_color = LV_COLOR_RED; //进来后默认设置为红方
-
+    if (sysData->autoSide == 0) //设置默认颜色
+        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
+    else
+        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
+    lv_obj_set_size(tab, LV_HOR_RES, LV_VER_RES); //设置位置
     lv_obj_t *redTab = lv_tabview_add_tab(tab, "红方");
     lv_obj_t *blueTab = lv_tabview_add_tab(tab, "蓝方");
-    lv_obj_t *skillAutoTab = lv_tabview_add_tab(tab, "技能赛");
+    //lv_obj_t *skillAutoTab = lv_tabview_add_tab(tab, "技能赛");
     /*当选项卡按下后进行的操作*/
     lv_tabview_set_tab_load_action(tab, tabChose);
-    std::array<lv_obj_t *, AUTO_NUMS> compLab;
-    int xFlag = 10, yFlag = 50, countForSw = 1, countForLab = 0;
+    int posX = 10, posY = 50;
     //创建各种开关和文本条 附带位置设置
-    for (auto &it : compSw)
+    for (auto &it : sysData->jsonVal["自动赛"].items())
     {
-        it = lv_sw_create(displayObj[OBJ_COMPETITION], nullptr);
-        compLab[countForLab] = lv_label_create(tab, nullptr); //创建开关后面的文本条
+        compSw.push_back(std::make_pair(lv_label_create(displayObj[OBJ_COMPETITION], nullptr), lv_sw_create(displayObj[OBJ_COMPETITION], nullptr))); //创建文本条和开关
+
+        lv_label_set_text(compSw.back().first, it.key().c_str()); /*设置文字*/
+        lv_obj_set_size(compSw.back().second, 60, 25);
+        if (it.value().get<bool>())
+            lv_sw_on(compSw.back().second); //设置按钮默认值
+        else
+            lv_sw_off(compSw.back().second); //设置按钮默认值
         //位置设置
-        lv_obj_set_pos(it, xFlag, yFlag);
-        lv_obj_align(compLab[countForLab], it, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-        yFlag += 60;
-        countForSw++;
-        countForLab++;
-        if (countForSw >= 4)
+        lv_obj_set_pos(compSw.back().first, posX, posY);                                        //设置lab文字的位置
+        lv_obj_align(compSw.back().second, compSw.back().first, LV_ALIGN_OUT_RIGHT_MID, 10, 0); //设置开关的位置
+        if (lv_obj_get_x(compSw.back().second) > 230)                                           //key表示偶数换行 it.szie()表示每行总共有2个数一个KEY 一个VAL
         {
-            xFlag = 250;
-            yFlag = 50;
-            countForSw = 0;
+            posX = 10;
+            posY += 60;
         }
+        else
+            posX = 260;
     }
-    //确认按钮
+    //确认按钮设置
     lv_obj_t *confirmBtn = lv_btn_create(displayObj[OBJ_COMPETITION], nullptr); //创建确认开关
     lv_obj_t *confirmLab = lv_label_create(confirmBtn, nullptr);                //创建确认开关文本 这里设置按钮为父级
-
-    lv_label_set_text(compLab[AUTO_FR], "前场&后场");
-    lv_label_set_text(compLab[AUTO_SHOOT], "高旗&中旗");
-    lv_label_set_text(compLab[AUTO_MID_SHOOT], "是否二次射旗");
-    lv_label_set_text(compLab[AUTO_PLATFORM], "是否开台");
-    lv_label_set_text(compLab[AUTO_BUMPERFLAG], "是否二次撞旗");
     lv_label_set_text(confirmLab, "确认");
-    //大小设置
-    lv_obj_set_size(confirmBtn, 200, 50);
-
+    lv_obj_set_size(confirmBtn, 200, 50); //大小设置
     //设置确定按钮和其文本框的位置
     lv_obj_set_pos(confirmBtn, LV_HOR_RES - 200, LV_VER_RES - 50);
     //确认按钮的动作
@@ -314,6 +324,12 @@ lv_res_t UserDisplay::closeAction(lv_obj_t *btn)
         lv_task_del(userDisplay->displayTask[TASK_OTHER]);
         userDisplay->displayTask[TASK_OTHER] = nullptr;
     }
+    if (sysData->isOPcontrol == false)
+        sysData->isOPcontrol = true;
+    if (sysData->pidTest != 0)
+        sysData->pidTest = 0;
+    if (!sysData->pidDebugData.empty()) //如果不为空 择清零
+        sysData->pidDebugData.clear();
     return LV_RES_INV;
 }
 lv_res_t UserDisplay::resetAction(lv_obj_t *btn)
@@ -323,7 +339,12 @@ lv_res_t UserDisplay::resetAction(lv_obj_t *btn)
         it->resetAllSensors();
     return LV_RES_INV;
 }
-
+lv_res_t UserDisplay::saveAction(lv_obj_t *btn)
+{
+    (void)btn; /*Unused*/
+    sysData->saveData();
+    return LV_RES_INV;
+}
 void UserDisplay::createMbox(obj_flag objname, const char *txt1, const char *txt2, const char *txt3, lv_btnm_action_t action) //创建一个消息框
 {
     lv_obj_t *mbox = lv_mbox_create(displayObj[objname], nullptr);
@@ -355,4 +376,5 @@ void UserDisplay::createResetBtn(obj_flag objname, const int x, const int y, con
     lv_label_set_text(resetLab, "reset");
     lv_btn_set_action(resetBtn, LV_BTN_ACTION_CLICK, resetAction);
 }
+
 } // namespace ncrapi

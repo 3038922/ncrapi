@@ -1,14 +1,12 @@
 #pragma once
-#include "ncrapi\util\timer.hpp"
-#include "ncrapi\util\util.hpp"
-#include "pros/adi.hpp"
-#include "pros/misc.hpp"
-#include "pros/motors.hpp"
-#include "pros/rtos.hpp"
-#include <vector>
+#include <string>
 
-namespace ncrapi
-{
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wunused-parameter"
+// #include <vector>
+// #pragma GCC diagnostic pop
+
+namespace ncrapi {
 class Obj
 {
   public:

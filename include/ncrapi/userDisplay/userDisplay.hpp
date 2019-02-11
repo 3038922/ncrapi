@@ -3,6 +3,7 @@
 #include "display/lvgl.h"
 #include <array>
 #include <iostream>
+#include <memory>
 #include <sstream>
 extern lv_font_t ncrfont10;
 // extern lv_img_t field;
@@ -67,9 +68,10 @@ class UserDisplay
     void createResetBtn(obj_flag objname, const int x, const int y, const int width = 50, const int high = 25);                                    //创建重制传感器按钮
     void createMbox(obj_flag objname, const char *txt1, const char *txt2, const char *txt3, lv_btnm_action_t action);                              //创建一个消息框
     static lv_res_t closeAction(lv_obj_t *btn);                                                                                                    //退出按钮的动作
-    static lv_res_t resetAction(lv_obj_t *btn);                                                                                                    //退出按钮的动作
+    static lv_res_t resetAction(lv_obj_t *btn);                                                                                                    //重置按钮的动作
+    static lv_res_t saveAction(lv_obj_t *btn);                                                                                                     //保存按钮的动作
 
     std::ostringstream ostr;
 };
 } // namespace ncrapi
-extern ncrapi::UserDisplay *userDisplay;
+extern std::unique_ptr<ncrapi::UserDisplay> userDisplay;

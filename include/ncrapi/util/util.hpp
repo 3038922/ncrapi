@@ -2,8 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace ncrapi
-{
+namespace ncrapi {
 //数学常数
 static constexpr double analogInToV = 286.0;
 static constexpr double inchToMM = 25.4;
@@ -19,22 +18,33 @@ T copySign(T val)
         return -1;
     return 0;
 }
+template <typename T>
+T clamp(const T &val, const T min, const T max)
+{
+
+    if (val < min)
+        return min;
+    else if (val > max)
+        return max;
+    else
+        return val;
+}
 
 template <typename T>
 T clamp(const T &val, const T min, const T max, std::string_view name)
 {
-    T temp = val;
     if (val < min)
     {
-        temp = min;
         std::cerr << name << "超限,已设置为最小值:" << min << std::endl;
+        return min;
     }
     else if (val > max)
     {
-        temp = max;
         std::cerr << name << "超限,已设置为最大值:" << max << std::endl;
+        return max;
     }
-    return temp;
+    else
+        return val;
 }
 
 /**

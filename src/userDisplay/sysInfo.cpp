@@ -33,12 +33,11 @@ static void tabChose(lv_obj_t *tab, uint16_t x)
 {
     //这个似乎不能删
 }
-namespace ncrapi
-{
+namespace ncrapi {
 void UserDisplay::createSysInfo(lv_obj_t *parent)
 {
 
-    createUserTask(TASK_OTHER, sysInfoTask, 100, "sysInfo");
+    createUserTask(TASK_OTHER, sysInfoTask, 100, "系统信息");
     if (displayObj[OBJ_BTNM_SON] == nullptr)
         displayObj[OBJ_BTNM_SON] = lv_tabview_create(parent, nullptr);
     std::vector<lv_obj_t *> tabs;
