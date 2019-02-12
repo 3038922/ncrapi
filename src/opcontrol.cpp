@@ -25,7 +25,9 @@ void opcontrol()
         //demo for nancy
         chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X); //底盘遥控
         lift->joyControl(joy1, DIGITAL_L1, DIGITAL_L2);       //升降
-        flipper->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);    //旋转器
+        catapule->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);   //弹射
+        ballintake->joyControl(joy1, DIGITAL_R1, DIGITAL_R2); //吸吐
+        cap->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);        //盘子夹
         //demo for nancy
         lastTime = nowTime;
         pros::c::task_delay_until(&nowTime, 10);

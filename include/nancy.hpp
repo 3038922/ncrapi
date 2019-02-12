@@ -16,7 +16,7 @@ const json userData = {
         "自动赛",
         {
             {"前场&后场", false},
-            {"开台&不开台",false},
+            {"开台&不开台", false},
         },
     },
     {
@@ -93,5 +93,8 @@ const json userData = {
 extern std::shared_ptr<pros::Controller> joy1;
 extern std::shared_ptr<ncrapi::Chassis> chassis;
 extern std::shared_ptr<ncrapi::Generic> lift;
-extern std::shared_ptr<ncrapi::Generic> flipper;
+extern std::shared_ptr<ncrapi::Generic> catapule;   //弹射
+extern std::shared_ptr<ncrapi::Generic> ballintake; //吸吐
+extern std::shared_ptr<ncrapi::Generic> cap;        //夹子
+
 //demo for nancy

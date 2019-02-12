@@ -17,7 +17,10 @@ std::unique_ptr<ncrapi::UserDisplay> userDisplay = nullptr; //图像数据类
 std::shared_ptr<pros::Controller> joy1;
 std::shared_ptr<ncrapi::Chassis> chassis;
 std::shared_ptr<ncrapi::Generic> lift;
-std::shared_ptr<ncrapi::Generic> flipper;
+std::shared_ptr<ncrapi::Generic> catapule;   //弹射
+std::shared_ptr<ncrapi::Generic> ballintake; //吸吐
+std::shared_ptr<ncrapi::Generic> cap;        //夹子
+
 //消息框动作函数
 lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
 {
@@ -69,14 +72,14 @@ void initialize()
     //demo for nancy
     lv_label_set_text(lab1, "底盘初始化中...");
     chassis = std::make_shared<ncrapi::Chassis>(sysData->jsonVal["底盘"]);
-    pros::delay(1000);
     lv_label_set_text(lab1, "升降初始化中...");
     lift = std::make_shared<ncrapi::Generic>("升降", sysData->jsonVal["升降"]);
-    pros::delay(1000);
-
-    lv_label_set_text(lab1, "旋转器初始化中...");
-    flipper = std::make_shared<ncrapi::Generic>("旋转器", sysData->jsonVal["旋转器"]); //旋转器
-    pros::delay(1000);
+    lv_label_set_text(lab1, "弹射初始化中...");
+    catapule = std::make_shared<ncrapi::Generic>("弹射", sysData->jsonVal["弹射"]);
+    lv_label_set_text(lab1, "吸吐初始化中...");
+    ballintake = std::make_shared<ncrapi::Generic>("吸吐", sysData->jsonVal["吸吐"]);
+    lv_label_set_text(lab1, "夹子初始化中...");
+    cap = std::make_shared<ncrapi::Generic>("夹子", sysData->jsonVal["夹子"]);
     //demo for nancy
     lv_label_set_text(lab1, "机器人初始化完毕...");
     lv_obj_del(userDisplay->displayObj[OBJ_BTNM_SON]);
