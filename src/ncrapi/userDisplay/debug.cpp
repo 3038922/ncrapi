@@ -1,4 +1,4 @@
-#include "ncrapi/system/systemData.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 lv_obj_t *debugLab;
 static lv_res_t clearAction(lv_obj_t *btn)
@@ -16,7 +16,8 @@ static lv_res_t clearAction(lv_obj_t *btn)
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
     return LV_RES_INV;
 }
-namespace ncrapi {
+namespace ncrapi
+{
 void UserDisplay::createDebug(lv_obj_t *parent)
 {
 

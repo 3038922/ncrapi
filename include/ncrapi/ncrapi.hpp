@@ -2,7 +2,7 @@
 
 #include "ncrapi/chassis/chassis.hpp"
 #include "ncrapi/generic/generic.hpp"
-#include "ncrapi/system/systemData.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 
 #define NCR_VERSION_STRING "8.0.0"

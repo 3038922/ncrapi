@@ -9,7 +9,7 @@
 #include "main.hpp"
 //全局变量和类
 
-std::unique_ptr<ncrapi::SystemData> sysData = nullptr;      //系统数据类
+std::unique_ptr<ncrapi::SysBase> sysData = nullptr;         //系统数据类
 std::unique_ptr<ncrapi::UserDisplay> userDisplay = nullptr; //图像数据类
 //全局初始化构造函数
 //部件类初始化
@@ -50,7 +50,7 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
 
 void initialize()
 { //系统初始化
-    sysData = std::make_unique<ncrapi::SystemData>(userData);
+    sysData = std::make_unique<ncrapi::SysBase>(userData);
     //显示初始化
     userDisplay = std::make_unique<ncrapi::UserDisplay>();
     userDisplay->createMbox(OBJ_BTNM_SON, "请选择红蓝方(默认红方)", "红方", "蓝方", choseSideAction);
