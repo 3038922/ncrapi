@@ -19,9 +19,9 @@ pros::Controller *joy2; //副遥控器
 
 ncrapi::Chassis *chassis; //底盘
 ncrapi::Generic *lift;    //升降
-ncrapi::Generic *claw; //旋转器
-ncrapi::Generic *ballintake; //旋转器
-ncrapi::Generic *catapult; //旋转器
+ncrapi::Generic *claw; //夹子
+ncrapi::Generic *ballintake; //吸球器
+ncrapi::Generic *catapult; //射球器
 
 //消息框动作函数
 lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
@@ -80,9 +80,18 @@ void initialize()
     lift = new ncrapi::Generic("升降", sysData->jsonVal["升降"]);
     pros::delay(1000);
 
-    lv_label_set_text(lab1, "旋转器初始化中...");
-    flipper = new ncrapi::Generic("旋转器", sysData->jsonVal["旋转器"]); //旋转器
+    lv_label_set_text(lab1, "夹子初始化中...");
+    flipper = new ncrapi::Generic("夹子", sysData->jsonVal["夹子"]); //夹子
     pros::delay(1000);
+
+    lv_label_set_text(lab1, "吸球器初始化中...");
+    flipper = new ncrapi::Generic("吸球器", sysData->jsonVal["吸球器"]); //旋转器
+    pros::delay(1000);
+
+    lv_label_set_text(lab1, "旋转器初始化中...");
+    flipper = new ncrapi::Generic("射球器", sysData->jsonVal["射球器"]); //旋转器
+    pros::delay(1000);
+
     //demo for nancy
     lv_label_set_text(lab1, "机器人初始化完毕...");
     lv_obj_del(userDisplay->displayObj[OBJ_BTNM_SON]);
