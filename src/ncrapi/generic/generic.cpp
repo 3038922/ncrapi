@@ -1,5 +1,5 @@
 #include "ncrapi/generic/generic.hpp"
-#include "ncrapi/system/systemData.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include <algorithm>
 #include <cmath>
 namespace ncrapi

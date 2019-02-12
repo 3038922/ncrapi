@@ -1,9 +1,10 @@
 #include "ncrapi/device/motor.hpp"
-#include "ncrapi/system/systemData.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include "pros/motors.hpp"
 #include <iostream>
 
-namespace ncrapi {
+namespace ncrapi
+{
 Motor::Motor(const std::string &name, const int &port, const bool &isRevase, const int &gearset) : _port(port), _name(name),
                                                                                                    pros::Motor(port)
 {

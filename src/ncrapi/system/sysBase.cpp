@@ -1,17 +1,16 @@
 
 #include "ncrapi/ncrapi.hpp"
-// flagCoordinate flagCoordinate[2][9] = {{{289, 387, 1080}, {289, 387, 724}, {289, 387, 369}, {190, 1681, 1080}, {190, 1681, 724}, {190, 1681, 369}, {289, 3112, 1080}, {289, 3112, 724}, {289, 3112, 369}},                                                                          //普通自动赛坐标
-//                                        {{289, 387, 1080}, {289, 387, 724}, {289, 387, 369}, {289, 387 + 2 * MAT_SIZE, 1080}, {289, 2 * MAT_SIZE, 724}, {289, 2 * MAT_SIZE, 369}, {289, 387 + 4 * MAT_SIZE, 1080}, {289, 387 + 4 * MAT_SIZE, 724}, {289, 387 + 4 * MAT_SIZE, 369}}}; //纯自动旗子坐标
 
 namespace ncrapi
 {
-SystemData::SystemData(const json &pragam) : jsonVal(pragam)
+SysBase::SysBase(const json &pragam) : jsonVal(pragam)
 {
 
     //系统信息录入
     robotInfo = jsonVal["系统信息"]["机器人类型"];
     robotInfo += jsonVal["系统信息"]["队伍编号"];
     robotInfo += jsonVal["系统信息"]["用户"];
+
     //DEBUG模式打开
     debugFile = fopen("/usd/debug.txt", "a"); //以附加方式打开
     if (debugFile == nullptr)
@@ -19,7 +18,7 @@ SystemData::SystemData(const json &pragam) : jsonVal(pragam)
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
     }
 
-    std::cout << "系统类构造成功" << std::endl;
+    std::cout << "系统基类构造成功" << std::endl;
 }
 
 /*
@@ -30,7 +29,7 @@ SystemData::SystemData(const json &pragam) : jsonVal(pragam)
  * @param name 名字
  */
 
-bool SystemData::readSDcard()
+bool SysBase::readSDcard()
 {
     FILE *file = fopen("config.json", "r");
     if (file == nullptr)
@@ -57,7 +56,7 @@ bool SystemData::readSDcard()
  * @return false 保存失败
  */
 
-bool SystemData::saveData()
+bool SysBase::saveData()
 {
     FILE *file = fopen("config.json", "w");
     if (file == nullptr)
@@ -75,7 +74,7 @@ bool SystemData::saveData()
     *增加部件名字 
     * @param str 部件的名字
     */
-void SystemData::addObj(Obj *generic)
+void SysBase::addObj(Obj *generic)
 {
     obj.push_back(generic);
 }
@@ -83,20 +82,20 @@ void SystemData::addObj(Obj *generic)
      *获取当前机器人部件总数 
      * @return size_t 部件总数
      */
-size_t SystemData::getObjNums()
+size_t SysBase::getObjNums()
 {
     return obj.size();
 }
 /**
      *停止所有部件运作
      */
-void SystemData::stopAllObj()
+void SysBase::stopAllObj()
 {
     for (auto &it : obj)
         it->stop();
 }
 
-void SystemData::addDebugData(std::initializer_list<std::string> val)
+void SysBase::addDebugData(std::initializer_list<std::string> val)
 {
     std::string str;
     for (auto &it : val)
@@ -116,7 +115,7 @@ void SystemData::addDebugData(std::initializer_list<std::string> val)
     else
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
 }
-void SystemData::showDebugData(std::string &str)
+void SysBase::showDebugData(std::string &str)
 {
     if (debugFile != nullptr)
     {
@@ -131,7 +130,7 @@ void SystemData::showDebugData(std::string &str)
     else
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
 }
-void SystemData::closeDebugData()
+void SysBase::closeDebugData()
 {
     if (debugFile != nullptr)
         fclose(debugFile);
@@ -139,7 +138,7 @@ void SystemData::closeDebugData()
         std::cerr << "debug 文件打开错误,请检查SD卡!" << std::endl;
 }
 
-void SystemData::print(const json &pragma, std::string_view ignore)
+void SysBase::print(const json &pragma, std::string_view ignore)
 {
     for (auto &it : pragma.items())
         if (it.key() != ignore)
@@ -152,7 +151,7 @@ void SystemData::print(const json &pragma, std::string_view ignore)
             }
 }
 //递归打印
-void SystemData::recursionPrint(const json &pragma, std::string_view ignore)
+void SysBase::recursionPrint(const json &pragma, std::string_view ignore)
 {
     for (auto &[key, val] : pragma.items())
     {

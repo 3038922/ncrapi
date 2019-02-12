@@ -5,7 +5,7 @@
  * @Last modified by:   陈昱安
  * @Last modified time: 2018-10-28T22:09:06+08:00
  */
-#include "ncrapi/system/systemData.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 #include <iomanip>
 static void sysInfoTask(void *param)
@@ -33,7 +33,8 @@ static void tabChose(lv_obj_t *tab, uint16_t x)
 {
     //这个似乎不能删
 }
-namespace ncrapi {
+namespace ncrapi
+{
 void UserDisplay::createSysInfo(lv_obj_t *parent)
 {
 
