@@ -17,7 +17,6 @@ class Generic : public Obj
 {
 
   public:
-    Generic(const std::string name, const std::vector<Motor> &motorList, const int hold);
     Generic(const std::string &name, const json &pragma);
     /**
      * 初始化函数
@@ -84,6 +83,7 @@ class Generic : public Obj
      * @return 1是系统正转状态 0悬停状态 -1 是系统反转状态
      */
     virtual int getMode();
+
     virtual void joyControl(std::shared_ptr<pros::Controller> joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down);
     /**
     * 重置马达编码器
@@ -95,6 +95,11 @@ class Generic : public Obj
  * @param pos 要设置的值
  */
     virtual void setEnc(const double pos);
+    /**
+     * @brief 获取开环控制占空比(pwm)
+     * 
+     */
+    virtual int getOpenLoopVal();
     /**
      * 获取编码器值
      * @return 弹射编码器的值

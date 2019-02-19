@@ -3,8 +3,15 @@
 
 namespace ncrapi
 {
-SysBase::SysBase(const json &pragam) : jsonVal(pragam)
+SysBase::SysBase(const json &pragam)
 {
+    if (!readSDcard(pragam))
+    {
+        std::cerr << "从userConfig读取配置" << std::endl;
+        jsonVal = pragam;
+        if (!saveData())
+            std::cerr << "config.json无法保存,请检查SD卡" << std::endl;
+    }
 
     //系统信息录入
     robotInfo = jsonVal["系统信息"]["机器人类型"];
@@ -28,10 +35,9 @@ SysBase::SysBase(const json &pragam) : jsonVal(pragam)
  * @param filePath 路径
  * @param name 名字
  */
-
-bool SysBase::readSDcard()
+bool SysBase::readSDcard(json pragam)
 {
-    FILE *file = fopen("config.json", "r");
+    FILE *file = fopen("/usd/config.json", "r");
     if (file == nullptr)
     {
         std::cerr << "json 文件打开错误" << std::endl;
@@ -42,11 +48,23 @@ bool SysBase::readSDcard()
     while (fgets(buf, 1024, file) != nullptr) //读取一行
         line += buf;
     jsonVal = json::parse(line);
-    //std::cout << line << std::endl;
+    if (jsonVal["json版本号"] < pragam["json版本号"])
+    {
+        float temp = pragam["json版本号"]; //先存下新的版本号
+        pragam.merge_patch(jsonVal);       //用新的合并老的数据 把SD卡数据替换默认数据
+        jsonVal = pragam;
+
+        std::stringstream oss;     //主要为了去掉小数点后多余的0 默认3位
+        oss.setf(std::ios::fixed); //用定点格式显示浮点数,不会用科学计数法表示
+        oss.precision(1);          //由于用了定点格式，设置变为了保留1位小数
+        oss << temp;
+        oss >> jsonVal["json版本号"];
+        saveData();
+        std::cout << "json版本升级为" << jsonVal["json版本号"] << std::endl;
+    }
     fclose(file);
     return true;
 }
-
 /**
  * 以vector 容器为基础修改保存文件
  * @tparam T 数据的类型
@@ -58,14 +76,14 @@ bool SysBase::readSDcard()
 
 bool SysBase::saveData()
 {
-    FILE *file = fopen("config.json", "w");
+    FILE *file = fopen("/usd/config.json", "w");
     if (file == nullptr)
     {
         std::cerr << "json 保存失败" << std::endl;
         return false;
     }
     fprintf(file, "%s", jsonVal.dump(4).c_str()); //保存
-    std::cout << "保存成功" << std::endl;
+    std::cout << "json 保存成功" << std::endl;
     fclose(file);
     return true;
 }

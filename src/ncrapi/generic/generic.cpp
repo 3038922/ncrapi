@@ -9,24 +9,7 @@ namespace ncrapi
  * @param a    马达对象
  * @param hold 悬停值
  */
-Generic::Generic(const std::string name, const std::vector<Motor> &motorList, const int hold) : _motorList(motorList), _name(name), _holdVal(hold)
-{
-    _nums = _motorList.size();
-    if (_nums == 0)
-        std::cerr << "chassis side nums error" << std::endl;
-    pros::delay(100);
-    resetEnc();
-    size_t temp = _motorList.begin()->get_gearing();
-    if (temp == 0)
-        _gearing = 100;
-    else if (temp == 1)
-        _gearing = 200;
-    else if (temp == 2)
-        _gearing = 600;
-    else
-        std::cerr << "get gearing error" << std::endl;
-    sysData->addObj(this);
-}
+
 Generic::Generic(const std::string &name, const json &pragma) : _name(name)
 {
 
@@ -209,20 +192,20 @@ void Generic::resetEnc()
         it.tare_position();
 }
 /**
-    * 重置马达编码器
-    */
+ * @brief 设置编码器值
+ * 
+ * @param pos 要设置的值
+ */
 void Generic::setEnc(const double pos)
 {
     for (auto &it : _motorList)
         it.set_zero_position(pos);
 }
-/**
- * @brief 设置编码器值
- * 
- * @param pos 要设置的值
- */
+int Generic::getOpenLoopVal()
+{
+    return _openLoopVal;
+}
 
-void setEnc(int pos);
 /**
      * 获取编码器值
      * @return 弹射编码器的值

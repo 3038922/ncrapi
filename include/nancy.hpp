@@ -15,6 +15,7 @@ const json userData = {
     {
         "自动赛",
         {
+            {"红方&蓝方", false},
             {"前场&后场", false},
             {"开台&不开台", false},
         },

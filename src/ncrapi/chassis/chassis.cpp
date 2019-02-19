@@ -7,15 +7,6 @@
 namespace ncrapi
 {
 
-Chassis::Chassis(const std::vector<Motor> &motorList) : _motorList(motorList), _name("底盘")
-{
-    _sideNums = _motorList.size() / 2;
-    if (_sideNums % 2 != 0 || _sideNums == 0)
-        std::cerr << "chassis side nums error" << std::endl;
-    pros::delay(100);
-    resetEnc();
-    sysData->addObj(this);
-}
 Chassis::Chassis(const json &pragma) : _name("底盘")
 {
     for (auto &[key, value] : pragma["马达"].items())
@@ -40,13 +31,41 @@ void Chassis::set(const int left, const int right)
         _motorList[i].move(_pwm[0]);
     for (size_t i = _sideNums; i < _motorList.size(); i++)
         _motorList[i].move(_pwm[1]);
+    if ((getTemperature(0) >= 50 || getTemperature(1) >= 50) && _timerTemp.getDtFromMark() >= 15000)
+    {
+        sysData->addDebugData({"底盘马达过热!"});
+        _timerTemp.placeMark();
+    }
 }
+/**
+    设定电机的速度。
+    *
+    *
+    *当达到错误状态时，此函数使用以下errno值：
+    *EACCES  -另一个资源目前正在尝试访问该端口。
+    *
+    *\ param left right 新电机速度为 - +  - 100，+ -200或+ -600，具体取决于电机的齿轮组
+    *
+    *\如果操作成功则返回1或如果操作则返回PROS_ERR
+    *失败，设置错误。
+     */
 void Chassis::moveVelocity(const std::int32_t left, const std::int32_t right)
 {
     for (size_t i = 0; i < _sideNums; i++)
         _motorList[i].move_velocity(left);
     for (size_t i = _sideNums; i < _motorList.size(); i++)
         _motorList[i].move_velocity(right);
+}
+/**
+     *以电压方式控制电机正转反转 
+     * @param voltage  电压 -120 +120
+     */
+void Chassis::moveVoltage(const double left, const double right)
+{
+    for (size_t i = 0; i < _sideNums; i++)
+        _motorList[i].move_voltage(static_cast<int32_t>(left * 100));
+    for (size_t i = _sideNums; i < _motorList.size(); i++)
+        _motorList[i].move_voltage(static_cast<int32_t>(right * 100));
 }
 void Chassis::moveRelative(const double leftPos, const double rightPos, const std::int32_t velocity)
 {
@@ -55,48 +74,99 @@ void Chassis::moveRelative(const double leftPos, const double rightPos, const st
     for (size_t i = _sideNums; i < _motorList.size(); i++)
         _motorList[i].move_relative(rightPos, velocity);
 }
-void Chassis::forward(const int pwm)
+/**
+     * 普通前进后退 开环控制
+     * @param pwm  前进+ 后退- 范围:+-127
+     */
+void Chassis::forward(const int pwm, const int speedMode[128])
 {
-    set(pwm, pwm);
+    int sign = copySign(pwm);
+    set(speedMode[abs(pwm)] * sign, speedMode[abs(pwm)] * sign);
 }
+/**
+     * 使用速度环控制底盘前进后退
+     * @param velocity 设定的速度 上限红齿轮+-100 绿齿轮+-200 蓝齿轮+-600
+     */
 void Chassis::forwardVelocity(const int32_t velocity)
 {
     moveVelocity(velocity, velocity);
+}
+/**
+     * 使用电压环进行前后控制
+     * @param velocity -120 +120
+     */
+void Chassis::forwardVoltage(const double voltage)
+{
+    moveVoltage(voltage, voltage);
 }
 void Chassis::forwardRelative(const double pos, const std::int32_t velocity)
 {
     moveRelative(pos, pos, velocity);
 }
-void Chassis::rotate(const int pwm)
+/**
+     * 普通旋转 开环控制
+     * @param pwm 左转+ 右转- 范围:+-127
+     */
+void Chassis::rotate(const int pwm, const int speedMode[128])
 {
-    set(pwm, -pwm);
+    int sign = copySign(pwm);
+    set(-speedMode[abs(pwm)] * sign, speedMode[abs(pwm)] * sign);
 }
+/**
+     * 使用速度环控制底盘左转右转 左转为+ 右转为-
+     * @param velocity 设定的速度 上限红齿轮+-100 绿齿轮+-200 蓝齿轮+-600
+     */
 void Chassis::rotateVelocity(const int32_t velocity)
 {
-    moveVelocity(velocity, -velocity);
+    moveVelocity(-velocity, velocity);
 }
 void Chassis::rotateReative(const double pos, const std::int32_t velocity)
 {
     moveRelative(pos, -pos, velocity);
 }
+/**
+     * 使用电压环进行左右控制
+     * @param velocity 左+120 右-120
+     */
+void Chassis::rotateVoltage(const double voltage)
+{
+    moveVoltage(-voltage, voltage);
+}
+/**
+     * 底盘马达停转
+     */
 void Chassis::stop()
 {
     set(0, 0);
 }
-void Chassis::driveVector(const int distPwm, const int anglePwm, const int *speedMode) //开弧线
+/**
+     * 矢量控制 开弧线
+     * @param distPwm  前进的力度 前进+ 后退-
+     * @param anglePwm 弧线的力度 左开+ 右开-
+     * 例:    chassis.driveVector(127, 80);
+     */
+void Chassis::driveVector(const int distPwm, const int anglePwm, const int speedMode[128]) //开弧线
 {
     int left = distPwm + anglePwm;
     int right = distPwm - anglePwm;
-    int leftSign = static_cast<int>(copysign(1.0, static_cast<float>(left)));
-    int rightSign = static_cast<int>(copysign(1.0, static_cast<float>(right)));
-    if (abs(left) > 127)
-        left = 127 * leftSign;
-    if (abs(right) > 127)
-        right = 127 * rightSign;
+
+    int leftSign = copySign(left);
+    int rightSign = copySign(right);
+    left = std::clamp(left, -127, 127);
+    right = std::clamp(right, -127, 127);
+
     set(speedMode[abs(left)] * leftSign, speedMode[abs(right)] * rightSign);
 }
-void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode)
+
+/**
+     * 遥控模块 单摇杆双摇杆都用这个
+     * @param verticalVal     前后通道
+     * @param horizontalVal    左右通道
+     * @param threshold 遥控器矫正阀值
+     */
+void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int speedMode[128])
 {
+
     int32_t x = joy->get_analog(verticalVal);
     int32_t y = joy->get_analog(horizontalVal);
     if (abs(x) < _joyThreshold)
@@ -117,29 +187,50 @@ void Chassis::tank(std::shared_ptr<pros::Controller> joy, pros::controller_analo
         r = 0;
     set(l, r);
 }
+
+/**
+     * 重置底盘所有马达编码器
+     */
 void Chassis::resetEnc()
 {
     for (auto &it : _motorList)
         it.tare_position();
 }
+
+/**
+     * 重置底盘相关传感器
+     */
 void Chassis::resetAllSensors()
 {
     resetEnc();
 }
+/**
+ * @获取左边或者右边编码器值
+ * @param side 0左边 1右边
+ * @return double 返回左边或者右边编码器值
+ */
 double Chassis::getEnc(const bool side)
 {
     size_t i = 0;
-    size_t max = _sideNums;
+    // size_t max = _sideNums;
+    // if (side == 1)
+    // {
+    //     i = _sideNums;
+    //     max = _motorList.size();
+    // }
+    // double sum = 0;
+    // for (; i < max; i++)
+    //     sum += _motorList[i].get_position();
+    // return sum / _sideNums;
     if (side == 1)
-    {
         i = _sideNums;
-        max = _motorList.size();
-    }
-    double sum = 0;
-    for (; i < max; i++)
-        sum += _motorList[i].get_position();
-    return sum / _sideNums;
+    return _motorList[i].get_position();
 }
+/**
+     * 获取电机当前速度  
+     * @param side  0左边 1右边
+     * @return double 返回左边或者右边编码器值
+     */
 double Chassis::getSpeed(const bool side)
 {
     size_t i = 0;
@@ -154,6 +245,12 @@ double Chassis::getSpeed(const bool side)
         sum += _motorList[i].get_actual_velocity();
     return sum / _sideNums;
 }
+
+/**
+ * 获取左边或者右边的温度
+ * @param side 左边0 右边1
+ * @return const double 返回左边或者右边的温度
+ */
 const double Chassis::getTemperature(const bool side) const
 {
     size_t i = 0;
@@ -168,6 +265,11 @@ const double Chassis::getTemperature(const bool side) const
         sum += _motorList[i].get_temperature();
     return sum / _sideNums;
 }
+/**
+ * 获取左边或者右边的电压
+ * @param side 左边0 右边1
+ * @return int32_t 返回左边或者右边的电压
+ */
 const int32_t Chassis::getVoltage(const bool side) const
 {
     size_t i = 0;
@@ -183,7 +285,6 @@ const int32_t Chassis::getVoltage(const bool side) const
 
     return sum / static_cast<int32_t>(_sideNums); //注意这里有坑
 }
-
 const int32_t Chassis::getCurrent(const bool side) const
 {
     size_t i = 0;
@@ -199,6 +300,9 @@ const int32_t Chassis::getCurrent(const bool side) const
     return sum / static_cast<int32_t>(_sideNums); //注意这里有坑
 }
 
+/**
+     * 显示传感器数据到屏幕 ostringstream ostr流
+     */
 void Chassis::showSensor()
 {
     userDisplay->ostr << "左底盘: 编码器:" << getEnc(0) << " 温度:" << getTemperature(0) << "电压:" << getVoltage(0) << "电流:" << getCurrent(0) << "\n"

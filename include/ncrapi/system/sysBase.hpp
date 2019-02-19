@@ -19,8 +19,7 @@ class SysBase
     SysBase(const json &pragam);
     //机器人初始参数
     std::vector<Obj *> obj; //存储机器人部件的名字
-    //自动赛参数
-    int autoSide = 0; //红方 0 蓝方360
+
     //遥控模式下的参数
     bool isOPcontrol = 1; //是否开启遥控模式 1开启 0关闭
 
@@ -46,7 +45,7 @@ class SysBase
     /**
  * 从SD中读取文件 存入数据容器
  */
-    bool readSDcard();
+    bool readSDcard(json pragam);
 
     /**
  * 以vector 容器为基础修改保存文件

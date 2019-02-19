@@ -5,7 +5,7 @@
 #include "ncrapi/system/object.hpp"
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
-#include <memory>
+
 namespace ncrapi
 {
 constexpr int realSpeed[128] = {
@@ -22,12 +22,9 @@ constexpr int realSpeed[128] = {
  */
 class Chassis : public Obj
 {
-
   public:
-    Chassis(const std::vector<Motor> &motorList);
     Chassis(const json &pragma);
     void set(const int left, const int right);
-
     /**
     设定电机的速度。
     *
@@ -41,7 +38,11 @@ class Chassis : public Obj
     *失败，设置错误。
      */
     void moveVelocity(const std::int32_t left, const std::int32_t right);
-
+    /**
+     *以电压方式控制电机正转反转 
+     * @param voltage  电压 -120 +120
+     */
+    void moveVoltage(const double left, const double right);
     /**
 *设置要移动到的电机的相对目标位置。
 *此运动与pros :: Motor :: motor_get_position（）中给出的电机当前位置有关。提供10.0作为位置参数将导致电机顺时针移动10个单位，无论当前位置如何。
@@ -50,17 +51,21 @@ class Chassis : public Obj
 *@ param velocity 以RPM为单位的最大运动速度
 */
     void moveRelative(const double leftPos, const double rightPos, const std::int32_t velocity);
-
     /**
      * 普通前进后退 开环控制
      * @param pwm  前进+ 后退- 范围:+-127
      */
-    void forward(const int pwm);
+    void forward(const int pwm, const int speedMode[128] = realSpeed);
     /**
      * 使用速度环控制底盘前进后退
      * @param velocity 设定的速度 上限红齿轮+-100 绿齿轮+-200 蓝齿轮+-600
      */
     void forwardVelocity(const int32_t velocity);
+    /**
+     * 使用电压环进行前后控制
+     * @param velocity -120 +120
+     */
+    void forwardVoltage(const double voltage);
     /**
      *使用电机内置闭环 让底盘前进或者后退        
      * @param pos 前进的距离 电机一圈360 自己换算
@@ -69,11 +74,11 @@ class Chassis : public Obj
     void forwardRelative(const double pos, const std::int32_t velocity);
     /**
      * 普通旋转 开环控制
-     * @param pwm 左转- 右转+ 范围:+-127
+     * @param pwm 左转+ 右转- 范围:+-127
      */
-    void rotate(const int pwm);
+    void rotate(const int pwm, const int speedMode[128] = realSpeed);
     /**
-     * 使用速度环控制底盘左转右转 左转- 右转+ 
+     * 使用速度环控制底盘左转右转 左转为+ 右转为-
      * @param velocity 设定的速度 上限红齿轮+-100 绿齿轮+-200 蓝齿轮+-600
      */
     void rotateVelocity(const int32_t velocity);
@@ -84,25 +89,31 @@ class Chassis : public Obj
      */
     void rotateReative(const double pos, const std::int32_t velocity);
     /**
+     * 使用电压环进行左右控制
+     * @param velocity 左+120 右-120
+     */
+    void rotateVoltage(const double voltage);
+    /**
      * 底盘马达停转
      */
-    void stop() override;
+    virtual void stop() override;
     /**
      * 矢量控制 开弧线
      * @param distPwm  前进的力度 前进+ 后退-
-     * @param anglePwm 弧线的力度 左开- 右开+
+     * @param anglePwm 弧线的力度 左开+ 右开-
      * 例:    chassis.driveVector(127, 80);
      */
-    void driveVector(const int distPwm, const int anglePwm, const int *speedMode = realSpeed); //开弧线
+    void driveVector(const int distPwm, const int anglePwm, const int speedMode[128] = realSpeed);
+
     /**
      * 遥控模块 单摇杆双摇杆都用这个
      * @param verticalVal     前后通道
      * @param horizontalVal    左右通道
      * @param threshold 遥控器矫正阀值
      */
-    void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int *speedMode = realSpeed);
-
+    virtual void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int speedMode[128] = realSpeed);
     void tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
+
     /**
      * 重置底盘所有马达编码器
      */

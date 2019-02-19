@@ -27,7 +27,7 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
     if (!strcmp(txt, "红方"))
     {
         // sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->autoSide = 0; //红方0
+        sysData->jsonVal["自动赛"]["红方&蓝方"] = false;
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_RED;
         userDisplay->mainStyle.body.main_color = LV_COLOR_RED;
@@ -37,16 +37,15 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
     if (!strcmp(txt, "蓝方"))
     {
         //   sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->autoSide = 360; //蓝方360
+        sysData->jsonVal["自动赛"]["红方&蓝方"] = true;
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_BLUE;
         userDisplay->mainStyle.body.main_color = LV_COLOR_BLUE;
         lv_mbox_set_text(lv_mbox_get_from_btn(mbox), txt);
         lv_obj_del(mbox);
     }
-    return LV_RES_OK; /*Return OK if the message box is not deleted*/
+    return LV_RES_INV; /*Return OK if the message box is not deleted*/
 }
-
 /**
  * 初始化函数
  */
