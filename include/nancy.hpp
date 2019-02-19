@@ -3,7 +3,7 @@
 #define ROBOT_CAP          //盘子机
 #define READ_SD_CARD false //是否从SD卡上读取 false 从这里读取参数 true 从SD卡上读取参数
 const json userData = {
-    {"json版本号", 1.0},
+    {"json版本号", 1.1},
     {
         "系统信息",
         {
