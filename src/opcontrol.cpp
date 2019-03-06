@@ -30,6 +30,6 @@ void opcontrol()
         cap->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);        //盘子夹
         //demo for nancy
         lastTime = nowTime;
-        pros::c::task_delay_until(&nowTime, 10);
+        pros::Task::delay_until(&nowTime, 10);
     }
 }

@@ -1,7 +1,9 @@
 #include "ncrapi/generic/generic.hpp"
+#include "ncrapi/system/logger.hpp"
 #include "ncrapi/system/sysBase.hpp"
 #include <algorithm>
 #include <cmath>
+
 namespace ncrapi
 {
 /**
@@ -19,11 +21,11 @@ Generic::Generic(const std::string &name, const json &pragma) : _name(name)
     pros::delay(100);
     _nums = _motorList.size();
     if (_nums == 0)
-        sysData->addDebugData({"部件类马达数量不能为0"});
+        logger->error({"部件类马达数量不能为0"});
     _gearing = _motorList.begin()->getGearSpeed();
     sysData->addObj(this);
     resetEnc();
-    std::cout << "部件 " << _name << "构造成功" << std::endl;
+    logger->info({"部件:", _name, " 构造成功"});
 }
 /**
      * 初始化函数
@@ -52,14 +54,14 @@ void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
 void Generic::set(const int pwm)
 {
     _encLast = _encNow;
-    _openLoopVal = std::clamp(pwm, -127, 127);
+    _openLoopVal = clamp(pwm, -127, 127);
     if (isSafeMode())
         _openLoopVal = _holdVal * _holdingFlag;
     for (auto &it : _motorList)
         it.move(_openLoopVal);
     if (getTemperature() >= 50 && _timerTemp.getDtFromMark() >= 15000)
     {
-        sysData->addDebugData({_name, ":马达过热!"});
+        logger->warnning({_name, ":马达过热!"});
         _timerTemp.placeMark();
     }
     _encNow = getEnc();
@@ -305,7 +307,7 @@ bool Generic::isSafeMode()
         _safeModeFlags++;
         if (_safeModeFlags > 10)
         {
-            sysData->addDebugData({_name, ":进入热保模式!请注意操作"});
+            logger->warnning({_name, ":进入热保模式!请注意操作"});
             return true;
         }
         else
@@ -331,7 +333,7 @@ void Generic::resetAllSensors()
      */
 void Generic::setBrakeMode(pros::motor_brake_mode_e_t mode)
 {
-    std::cout << "设置" << _name << "马达制动模式" << mode << std::endl;
+    logger->info({"设置:", _name, " 马达制动模式", std::to_string(mode)});
     for (auto &it : _motorList)
         it.set_brake_mode(mode);
 }

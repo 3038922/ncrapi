@@ -12,8 +12,6 @@ class SysBase
   public:
     //全局数据
     std::string robotInfo;
-    FILE *debugFile = nullptr;
-
     json jsonVal; //根数据
 
     SysBase(const json &pragam);
@@ -37,11 +35,6 @@ class SysBase
      *停止所有部件运作
      */
     void stopAllObj();
-
-    void addDebugData(std::initializer_list<std::string> val);
-    void showDebugData(std::string &str);
-    void closeDebugData();
-
     /**
  * 从SD中读取文件 存入数据容器
  */
@@ -56,4 +49,5 @@ class SysBase
     void recursionPrint(const json &pragma, std::string_view ignore);
 };
 } // namespace ncrapi
+
 extern std::unique_ptr<ncrapi::SysBase> sysData;

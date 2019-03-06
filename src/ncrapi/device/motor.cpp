@@ -1,7 +1,7 @@
 #include "ncrapi/device/motor.hpp"
+#include "ncrapi/system/logger.hpp"
 #include "ncrapi/system/sysBase.hpp"
 #include "pros/motors.hpp"
-#include <iostream>
 
 namespace ncrapi
 {
@@ -80,8 +80,8 @@ void Motor::init(int gear)
     size_t flag = get_gearing();
     set_encoder_units(pros::E_MOTOR_ENCODER_DEGREES); //设置编码器模式
     if (flag >= 0 && flag <= 2)
-        std::cout << _name << ":" << _port << " " << is_reversed() << " " << flag << " 构造成功" << std::endl;
+        logger->info({_name, ":", std::to_string(_port), " ", std::to_string(is_reversed()), " ", std::to_string(flag), " 构造成功"});
     else
-        sysData->addDebugData({_name, ":", std::to_string(_port), "构造失败,请检查马达"});
+        logger->error({_name, ":", std::to_string(_port), "构造失败,请检查马达"});
 }
 } // namespace ncrapi

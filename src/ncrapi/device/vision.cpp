@@ -1,18 +1,19 @@
 #include "ncrapi/device/vision.hpp"
+#include "ncrapi/system/logger.hpp"
 #include "ncrapi/util/util.hpp"
-#include <iostream>
 
-namespace ncrapi {
+namespace ncrapi
+{
 
 Vision::Vision(const std::string &name, const int &port) : _port(port), _name(name),
                                                            pros::Vision(port)
 {
-    std::cout << _name << ":" << _port << " 构造成功" << std::endl;
+    logger->info({_name, ":", std::to_string(_port), "构造成功"});
 }
 Vision::Vision(const std::string &name, const json &pragma) : _name(name), _port(pragma[name].get<int>()),
                                                               pros::Vision(pragma[name].get<int>())
 {
-    std::cout << _name << ":" << _port << " 构造成功" << std::endl;
+    logger->info({_name, ":", std::to_string(_port), "构造成功"});
 }
 std::string Vision::getName()
 {

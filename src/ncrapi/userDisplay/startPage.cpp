@@ -6,6 +6,7 @@
  * @Last modified time: 2018-10-28T22:09:06+08:00
  */
 
+#include "ncrapi/system/logger.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 
 /**
@@ -17,32 +18,31 @@
 static lv_res_t btnm_action(lv_obj_t *btnm, const char *txt)
 {
     (void)btnm; /*Unused*/
-    //TODO 做一个字符串判断
     if (!strcmp(txt, "系统信息"))
         userDisplay->createSysInfo(userDisplay->displayObj[BTNM_START]); //1
-    if (!strcmp(txt, "全局参数设置"))
+    else if (!strcmp(txt, "全局参数设置"))
         userDisplay->createConfig(userDisplay->displayObj[BTNM_START]); //2 创建CONFIGSET页面
-    if (!strcmp(txt, "自定义测试"))
-        userDisplay->createCustomTest(userDisplay->displayObj[BTNM_START]); //3
-    if (!strcmp(txt, "视觉传感器设置"))
+    else if (!strcmp(txt, "维护信息"))
+        userDisplay->createMaintenanceInfo(userDisplay->displayObj[BTNM_START]); //3
+    else if (!strcmp(txt, "视觉传感器设置"))
         userDisplay->createVision(userDisplay->displayObj[BTNM_START]); //4创建视觉页面
-    if (!strcmp(txt, "版本号"))
+    else if (!strcmp(txt, "版本号"))
         userDisplay->createVersion(userDisplay->displayObj[BTNM_START]); //5
-    if (!strcmp(txt, "机器人检测"))
+    else if (!strcmp(txt, "日志信息"))
         userDisplay->createDebug(userDisplay->displayObj[BTNM_START]); //6
-    if (!strcmp(txt, "PID调试"))
+    else if (!strcmp(txt, "PID调试"))
         userDisplay->createPidTest(userDisplay->displayObj[BTNM_START]); //7
-    if (!strcmp(txt, "ODOM测试"))
+    else if (!strcmp(txt, "ODOM测试"))
         userDisplay->createOdom(userDisplay->displayObj[BTNM_START]); //8
-
-    printf("Key pressed: %s\n", txt);
+    logger->info({"选择 ", txt});
     return LV_RES_INV;
 }
-namespace ncrapi {
+namespace ncrapi
+{
 void UserDisplay::createStartObj()
 {
-    static const char *startBtnm[] = {"系统信息", "机器人检测", "\n",
-                                      "全局参数设置", "自定义测试", "\n",
+    static const char *startBtnm[] = {"系统信息", "日志信息", "\n",
+                                      "全局参数设置", "维护信息", "\n",
                                       "PID调试", "视觉传感器设置", "\n",
                                       "ODOM测试", "版本号", ""};
     if (displayObj[BTNM_START] == nullptr)

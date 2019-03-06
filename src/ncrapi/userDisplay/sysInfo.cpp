@@ -12,10 +12,9 @@ static void sysInfoTask(void *param)
 {
     (void)param; /*Unused*/
     uint16_t temp = lv_tabview_get_tab_act(userDisplay->displayObj[OBJ_BTNM_SON]);
-
-    userDisplay->ostr.clear();                                               //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
-    userDisplay->ostr.str("");                                               //2：调用str("")将缓冲区清零，清除脏数据
-    userDisplay->ostr << std::fixed << std::setprecision(1) << std::setw(6); //流操纵算子
+    userDisplay->ostr.clear();                               //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
+    userDisplay->ostr.str("");                               //2：调用str("")将缓冲区清零，清除脏数据
+    userDisplay->ostr << std::fixed << std::setprecision(1); //流操纵算子  //std::setw(6) 宽度控制 //精度控制会影响后面的输出 std::setprecision(1)
     if (temp == 0)
         for (auto &it : sysData->obj)
             it->showSensor();
@@ -38,9 +37,9 @@ namespace ncrapi
 void UserDisplay::createSysInfo(lv_obj_t *parent)
 {
 
-    createUserTask(TASK_OTHER, sysInfoTask, 100, "系统信息");
     if (displayObj[OBJ_BTNM_SON] == nullptr)
         displayObj[OBJ_BTNM_SON] = lv_tabview_create(parent, nullptr);
+    displayObj[OBJ_BTNM_SON]->style_p->body.main_color = LV_COLOR_BLACK;
     std::vector<lv_obj_t *> tabs;
     tabs.push_back(lv_tabview_add_tab(displayObj[OBJ_BTNM_SON], "概览"));                     //先建立一个概览
     for (auto &it : sysData->obj)                                                             //遍历项目名字
@@ -57,6 +56,6 @@ void UserDisplay::createSysInfo(lv_obj_t *parent)
     createResetBtn(OBJ_BTNM_SON, LV_HOR_RES - 140, LV_VER_RES - 50);
     //退出按钮
     createExitBtn(OBJ_BTNM_SON);
-    sysInfoTask(nullptr);
+    createUserTask(TASK_OTHER, sysInfoTask, 100, "系统信息");
 }
 } // namespace ncrapi

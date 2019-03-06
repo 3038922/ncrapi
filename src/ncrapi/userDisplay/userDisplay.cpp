@@ -54,7 +54,7 @@ UserDisplay::UserDisplay()
     //应用全局样式
     lv_obj_set_style(displayObj[OBJ_BTNM_SON], &mainStyle); /*设置Surand系统主题*/
     lv_theme_set_current(theme);
-    std::cout << "图像类构造成功" << std::endl;
+    logger->info({"图像类构造成功"});
 }
 /**
  *自定义类创建 
@@ -77,17 +77,15 @@ void UserDisplay::createUserObj(obj_flag objname, bool isSrcLoad, const char *te
         {
             displayObj[objname] = lv_obj_create(parent, nullptr);
 
-            lv_obj_set_style(displayObj[objname], &mainStyle);
             lv_obj_set_size(displayObj[objname], LV_HOR_RES, LV_VER_RES - 10); //设置页面大小
             lv_obj_set_style(displayObj[objname], &mainStyle);                 //设置样式
             //退出按钮
             createExitBtn(objname);
         }
-
-        std::cout << "图像类:" << terminalText << " 构造成功" << std::endl;
+        logger->info({"图像类:", terminalText, " 构造成功"});
     }
     else
-        std::cerr << "图像类:" << terminalText << " 已存在" << std::endl;
+        logger->debug({"图像类:", terminalText, " 已经存在"});
 
     if (labText != nullptr)
     {
@@ -102,17 +100,15 @@ void UserDisplay::createUserObj(obj_flag objname, bool isSrcLoad, const char *te
  * @param loopTime  循环时间
  * @param terminalText 线程名称
  */
-void UserDisplay::createUserTask(task_flag taskName, void (*task)(void *), uint32_t loopTime, const char *terminalText)
+void UserDisplay::createUserTask(task_flag taskName, void (*task)(void *), uint32_t loopTime, const char *terminalText, void *pragma)
 {
     if (displayTask[taskName] == nullptr)
     {
-        displayTask[taskName] = lv_task_create(task, loopTime, LV_TASK_PRIO_LOW, nullptr);
-        std::cout << "图像类线程:" << terminalText << " 构造成功" << std::endl;
+        displayTask[taskName] = lv_task_create(task, loopTime, LV_TASK_PRIO_LOW, pragma);
+        logger->info({"图像类线程:", terminalText, " 构造成功"});
     }
     else
-    {
-        std::cout << "图像类线程:" << terminalText << " 构造成功" << std::endl;
-    }
+        logger->warnning({"图像类线程:", terminalText, " 已经存在"});
 }
 /**
  * 删除所有线程 
@@ -143,7 +139,7 @@ void UserDisplay::delObjs()
         {
             lv_obj_del(it);
             it = nullptr;
-            std::cout << "删除图像类:" << flag << " 个" << std::endl;
+            logger->info({"删除图像类:", std::to_string(flag), " 个"});
             flag++;
         }
     }
@@ -214,24 +210,26 @@ lv_res_t UserDisplay::confirmBtnIncomp(lv_obj_t *btn)
             str += (tempStr + "\n");
         }
         else
-            sysData->addDebugData({"自动赛json选项设置错误 请用&间隔"});
+            logger->error({"自动赛json选项设置错误 请用&间隔"});
         i++;
     }
     // 创建确认页面
-    userDisplay->createUserObj(OBJ_CONFIRM, true, "obj_confirm");
+    lv_obj_t *confirm = lv_obj_create(userDisplay->displayObj[OBJ_COMPETITION], nullptr);
+    lv_obj_set_size(confirm, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_style(confirm, &userDisplay->mainStyle);
     //显示自动赛选项
-    lv_obj_t *autoinfoLab = lv_label_create(userDisplay->displayObj[OBJ_CONFIRM], nullptr); //创建LAB条
-    userDisplay->ostr.clear();                                                              //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
-    userDisplay->ostr.str("");                                                              //2：调用str("")将缓冲区清零，清除脏数据
+    lv_obj_t *autoinfoLab = lv_label_create(confirm, nullptr); //创建LAB条
+    userDisplay->ostr.clear();                                 //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
+    userDisplay->ostr.str("");                                 //2：调用str("")将缓冲区清零，清除脏数据
     userDisplay->ostr << str << std::endl;
     lv_label_set_text(autoinfoLab, userDisplay->ostr.str().c_str());
     // 传感器页面创建
-    userDisplay->createUserTask(TASK_OTHER, sensorsTask, 100, "sensorInfo");                //创建一个线程
-    userDisplay->otherLab = lv_label_create(userDisplay->displayObj[OBJ_CONFIRM], nullptr); //创建基于INFOObj的标签
-    lv_obj_align(userDisplay->otherLab, autoinfoLab, LV_ALIGN_OUT_RIGHT_TOP, 20, 0);        //设置传感器栏目位置
+
+    userDisplay->otherLab = lv_label_create(confirm, nullptr);                       //创建基于INFOObj的标签
+    lv_obj_align(userDisplay->otherLab, autoinfoLab, LV_ALIGN_OUT_RIGHT_TOP, 20, 0); //设置传感器栏目位置
     //重置传感器按钮
-    userDisplay->createResetBtn(OBJ_CONFIRM, LV_HOR_RES - 80, LV_VER_RES - 30);
-    sensorsTask(nullptr); //刷新标签栏
+    userDisplay->createResetBtn(OBJ_COMPETITION, LV_HOR_RES - 80, LV_VER_RES - 30);
+    userDisplay->createUserTask(TASK_OTHER, sensorsTask, 100, "sensorInfo"); //创建一个线程
     return LV_RES_OK;
 }
 
@@ -281,10 +279,7 @@ void UserDisplay::createCompe()
     lv_obj_t *redTab = lv_tabview_add_tab(tab, "红方");
     lv_obj_t *blueTab = lv_tabview_add_tab(tab, "蓝方");
     //lv_obj_t *skillAutoTab = lv_tabview_add_tab(tab, "技能赛");
-    if (!sysData->jsonVal["自动赛"]["红方&蓝方"]) //设置默认红方还是蓝方
-        lv_tabview_set_tab_act(tab, 0, false);
-    else
-        lv_tabview_set_tab_act(tab, 1, false);
+    lv_tabview_set_tab_act(tab, sysData->jsonVal["自动赛"]["红方&蓝方"].get<uint16_t>(), false); //设置默认红方还是蓝方
     /*当选项卡按下后进行的操作*/
     lv_tabview_set_tab_load_action(tab, compTabChose);
     int posX = 10, posY = 50;
@@ -332,6 +327,10 @@ lv_res_t UserDisplay::closeAction(lv_obj_t *btn)
     (void)btn; /*Unused*/
     if (userDisplay->displayObj[OBJ_BTNM_SON] != nullptr)
     {
+        if (!sysData->jsonVal["自动赛"]["红方&蓝方"]) //设置默认颜色
+            userDisplay->displayObj[OBJ_BTNM_SON]->style_p->body.main_color = LV_COLOR_RED;
+        else
+            userDisplay->displayObj[OBJ_BTNM_SON]->style_p->body.main_color = LV_COLOR_BLUE;
         lv_obj_del(userDisplay->displayObj[OBJ_BTNM_SON]);
         userDisplay->displayObj[OBJ_BTNM_SON] = nullptr;
     }
@@ -348,7 +347,7 @@ void UserDisplay::createVersion(lv_obj_t *parent)
 {
 
     createUserObj(OBJ_BTNM_SON, false, "版本页面", parent);
-
+    displayObj[OBJ_BTNM_SON]->style_p->body.main_color = LV_COLOR_BLACK;
     lv_obj_t *verLab = lv_label_create(displayObj[OBJ_BTNM_SON], nullptr); //创建LAB条
     userDisplay->ostr.clear();                                             //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
     userDisplay->ostr.str("");                                             //2：调用str("")将缓冲区清零，清除脏数据

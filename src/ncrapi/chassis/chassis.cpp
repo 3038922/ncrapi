@@ -1,4 +1,5 @@
 #include "ncrapi/chassis/chassis.hpp"
+#include "ncrapi/system/logger.hpp"
 #include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 #include <algorithm>
@@ -17,23 +18,24 @@ Chassis::Chassis(const json &pragma) : _name("底盘")
     pros::delay(100);
     _sideNums = _motorList.size() / 2;
     if (_motorList.size() % 2 != 0 || _sideNums == 0)
-        sysData->addDebugData({"底盘类马达数量输入错误!半边马达数量: ", std::to_string(_sideNums)});
+        logger->error({"底盘类马达数量输入错误!半边马达数量: ", std::to_string(_sideNums)});
     _gearing = _motorList.begin()->getGearSpeed();
     sysData->addObj(this);
     resetEnc();
-    std::cout << "底盘基类构造成功" << std::endl;
+    logger->info({"底盘基类构造成功"});
 }
 void Chassis::set(const int left, const int right)
 {
     _pwm[0] = left;
     _pwm[1] = right;
     for (size_t i = 0; i < _sideNums; i++)
+    {
         _motorList[i].move(_pwm[0]);
-    for (size_t i = _sideNums; i < _motorList.size(); i++)
-        _motorList[i].move(_pwm[1]);
+        _motorList[i + _sideNums].move(_pwm[1]);
+    }
     if ((getTemperature(0) >= 50 || getTemperature(1) >= 50) && _timerTemp.getDtFromMark() >= 15000)
     {
-        sysData->addDebugData({"底盘马达过热!"});
+        logger->error({"底盘马达过热!"});
         _timerTemp.placeMark();
     }
 }
@@ -52,9 +54,10 @@ void Chassis::set(const int left, const int right)
 void Chassis::moveVelocity(const std::int32_t left, const std::int32_t right)
 {
     for (size_t i = 0; i < _sideNums; i++)
+    {
         _motorList[i].move_velocity(left);
-    for (size_t i = _sideNums; i < _motorList.size(); i++)
-        _motorList[i].move_velocity(right);
+        _motorList[i + _sideNums].move_velocity(right);
+    }
 }
 /**
      *以电压方式控制电机正转反转 
@@ -63,16 +66,18 @@ void Chassis::moveVelocity(const std::int32_t left, const std::int32_t right)
 void Chassis::moveVoltage(const double left, const double right)
 {
     for (size_t i = 0; i < _sideNums; i++)
+    {
         _motorList[i].move_voltage(static_cast<int32_t>(left * 100));
-    for (size_t i = _sideNums; i < _motorList.size(); i++)
-        _motorList[i].move_voltage(static_cast<int32_t>(right * 100));
+        _motorList[i + _sideNums].move_voltage(static_cast<int32_t>(right * 100));
+    }
 }
 void Chassis::moveRelative(const double leftPos, const double rightPos, const std::int32_t velocity)
 {
     for (size_t i = 0; i < _sideNums; i++)
+    {
         _motorList[i].move_relative(leftPos, velocity);
-    for (size_t i = _sideNums; i < _motorList.size(); i++)
-        _motorList[i].move_relative(rightPos, velocity);
+        _motorList[i + _sideNums].move_relative(rightPos, velocity);
+    }
 }
 /**
      * 普通前进后退 开环控制
@@ -147,15 +152,9 @@ void Chassis::stop()
      */
 void Chassis::driveVector(const int distPwm, const int anglePwm, const int speedMode[128]) //开弧线
 {
-    int left = distPwm + anglePwm;
-    int right = distPwm - anglePwm;
-
-    int leftSign = copySign(left);
-    int rightSign = copySign(right);
-    left = std::clamp(left, -127, 127);
-    right = std::clamp(right, -127, 127);
-
-    set(speedMode[abs(left)] * leftSign, speedMode[abs(right)] * rightSign);
+    int left = clamp(distPwm + anglePwm, -127, 127);
+    int right = clamp(distPwm - anglePwm, -127, 127);
+    set(speedMode[abs(left)] * copySign(left), speedMode[abs(right)] * copySign(right));
 }
 
 /**
@@ -167,14 +166,13 @@ void Chassis::driveVector(const int distPwm, const int anglePwm, const int speed
 void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int speedMode[128])
 {
 
-    int32_t x = joy->get_analog(verticalVal);
-    int32_t y = joy->get_analog(horizontalVal);
+    int x = joy->get_analog(verticalVal);
+    int y = joy->get_analog(horizontalVal);
     if (abs(x) < _joyThreshold)
         x = 0;
     if (abs(y) < _joyThreshold)
         y = 0;
-    else if (abs(y) >= _maxRotateSpd)
-        y = static_cast<int>(copysign(_maxRotateSpd, static_cast<float>(y)));
+    y = clamp(y, -_maxRotateSpd, _maxRotateSpd);
     driveVector(x, y, speedMode);
 }
 void Chassis::tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)
@@ -212,16 +210,6 @@ void Chassis::resetAllSensors()
 double Chassis::getEnc(const bool side)
 {
     size_t i = 0;
-    // size_t max = _sideNums;
-    // if (side == 1)
-    // {
-    //     i = _sideNums;
-    //     max = _motorList.size();
-    // }
-    // double sum = 0;
-    // for (; i < max; i++)
-    //     sum += _motorList[i].get_position();
-    // return sum / _sideNums;
     if (side == 1)
         i = _sideNums;
     return _motorList[i].get_position();
@@ -234,16 +222,9 @@ double Chassis::getEnc(const bool side)
 double Chassis::getSpeed(const bool side)
 {
     size_t i = 0;
-    size_t max = _sideNums;
     if (side == 1)
-    {
         i = _sideNums;
-        max = _motorList.size();
-    }
-    double sum = 0;
-    for (; i < max; i++)
-        sum += _motorList[i].get_actual_velocity();
-    return sum / _sideNums;
+    return _motorList[i].get_actual_velocity();
 }
 
 /**
@@ -253,16 +234,12 @@ double Chassis::getSpeed(const bool side)
  */
 const double Chassis::getTemperature(const bool side) const
 {
-    size_t i = 0;
-    size_t max = _sideNums;
+    size_t flag = 0;
     if (side == 1)
-    {
-        i = _sideNums;
-        max = _motorList.size();
-    }
+        flag = _sideNums;
     double sum = 0;
-    for (; i < max; i++)
-        sum += _motorList[i].get_temperature();
+    for (size_t i = 0; i < _sideNums; i++)
+        sum += _motorList[i + flag].get_temperature();
     return sum / _sideNums;
 }
 /**
@@ -272,31 +249,22 @@ const double Chassis::getTemperature(const bool side) const
  */
 const int32_t Chassis::getVoltage(const bool side) const
 {
-    size_t i = 0;
-    size_t max = _sideNums;
+    size_t flag = 0;
     if (side == 1)
-    {
-        i = _sideNums;
-        max = _motorList.size();
-    }
-    int32_t sum = 0;
-    for (; i < max; i++)
-        sum += _motorList[i].get_voltage();
-
+        flag = _sideNums;
+    double sum = 0;
+    for (size_t i = 0; i < _sideNums; i++)
+        sum += _motorList[i + flag].get_voltage();
     return sum / static_cast<int32_t>(_sideNums); //注意这里有坑
 }
 const int32_t Chassis::getCurrent(const bool side) const
 {
-    size_t i = 0;
-    size_t max = _sideNums;
+    size_t flag = 0;
     if (side == 1)
-    {
-        i = _sideNums;
-        max = _motorList.size();
-    }
-    int32_t sum = 0;
-    for (; i < max; i++)
-        sum += _motorList[i].get_current_draw();
+        flag = _sideNums;
+    double sum = 0;
+    for (size_t i = 0; i < _sideNums; i++)
+        sum += _motorList[i + flag].get_voltage();
     return sum / static_cast<int32_t>(_sideNums); //注意这里有坑
 }
 

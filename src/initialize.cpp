@@ -8,18 +8,18 @@
 
 #include "main.hpp"
 //全局变量和类
-
+std::unique_ptr<ncrapi::Logger> logger;                     //系统日志
 std::unique_ptr<ncrapi::SysBase> sysData = nullptr;         //系统数据类
 std::unique_ptr<ncrapi::UserDisplay> userDisplay = nullptr; //图像数据类
 //全局初始化构造函数
 //部件类初始化
 //demo for nancy
-std::shared_ptr<pros::Controller> joy1;
-std::shared_ptr<ncrapi::Chassis> chassis;
-std::shared_ptr<ncrapi::Generic> lift;
-std::shared_ptr<ncrapi::Generic> catapule;   //弹射
-std::shared_ptr<ncrapi::Generic> ballintake; //吸吐
-std::shared_ptr<ncrapi::Generic> cap;        //夹子
+std::shared_ptr<pros::Controller> joy1 = nullptr;
+std::shared_ptr<ncrapi::Chassis> chassis = nullptr;
+std::shared_ptr<ncrapi::Generic> lift = nullptr;
+std::shared_ptr<ncrapi::Generic> catapule = nullptr;   //弹射
+std::shared_ptr<ncrapi::Generic> ballintake = nullptr; //吸吐
+std::shared_ptr<ncrapi::Generic> cap = nullptr;        //夹子
 
 //消息框动作函数
 lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
@@ -32,6 +32,7 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_RED;
         userDisplay->mainStyle.body.main_color = LV_COLOR_RED;
         lv_mbox_set_text(lv_mbox_get_from_btn(mbox), txt);
+        sysData->saveData();
         lv_obj_del(mbox);
     }
     if (!strcmp(txt, "蓝方"))
@@ -42,6 +43,7 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
         userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_BLUE;
         userDisplay->mainStyle.body.main_color = LV_COLOR_BLUE;
         lv_mbox_set_text(lv_mbox_get_from_btn(mbox), txt);
+        sysData->saveData();
         lv_obj_del(mbox);
     }
     return LV_RES_INV; /*Return OK if the message box is not deleted*/
@@ -51,7 +53,11 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
  */
 
 void initialize()
-{ //系统初始化
+
+{
+    //系统日志初始化
+    logger = std::make_unique<ncrapi::Logger>(3);
+    //系统初始化
     sysData = std::make_unique<ncrapi::SysBase>(userData);
     //显示初始化
     userDisplay = std::make_unique<ncrapi::UserDisplay>();
@@ -63,10 +69,10 @@ void initialize()
     //显示用户信息
     lv_obj_t *lab2 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
     lv_obj_set_y(lab2, 20);
-    std::string temp = sysData->robotInfo;
-    temp += "\n版本号:";
-    temp += NCR_VERSION_STRING;
-    lv_label_set_text(lab2, temp.c_str());
+    std::stringstream oss;
+    oss << userData["系统信息"]["机器人类型"].get<std::string>() << " " << userData["系统信息"]["队伍编号"].get<std::string>() << " "
+        << userData["系统信息"]["用户"].get<std::string>() << "\n版本号:" << NCR_VERSION_STRING;
+    lv_label_set_text(lab2, oss.str().c_str());
 
     //demo for nancy
     lv_label_set_text(lab1, "底盘初始化中...");
