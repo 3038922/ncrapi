@@ -15,6 +15,8 @@ void UserDisplay::createVision(lv_obj_t *parent)
     lv_obj_t *getCodeTab = lv_tabview_add_tab(displayObj[OBJ_BTNM_SON], "按数据2");
     /*当选项卡按下后进行的操作*/
 
+    //创建保存按钮
+    createSaveBtn(OBJ_BTNM_SON);
     //退出按钮
     createExitBtn(OBJ_BTNM_SON);
 }

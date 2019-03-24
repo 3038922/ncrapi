@@ -1,6 +1,7 @@
 
-#include "ncrapi/ncrapi.hpp"
+#include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/system/logger.hpp"
+
 namespace ncrapi
 {
 SysBase::SysBase(const json &pragam)
@@ -14,6 +15,10 @@ SysBase::SysBase(const json &pragam)
     }
     //系统信息录入
     robotInfo = jsonVal["系统信息"]["机器人类型"].get<std::string>() + " " + jsonVal["系统信息"]["队伍编号"].get<std::string>() + " " + jsonVal["系统信息"]["用户"].get<std::string>();
+    for (size_t i = 1; i <= 21; i++)
+        _i2cPort.push_back(i); //1-21I2C端口号
+    for (size_t i = 1; i <= 8; i++)
+        _adiPort.push_back(i); //1-8adi端口号
     logger->info({"系统基类构造成功"});
 }
 
@@ -45,21 +50,60 @@ bool SysBase::readSDcard(json pragam)
         while (1)
             ;
     }
+    std::stringstream oss;     //主要为了去掉小数点后多余的0 默认3位
+    oss.setf(std::ios::fixed); //用定点格式显示浮点数,不会用科学计数法表示
+    oss.precision(1);          //由于用了定点格式，设置变为了保留1位小数
+    oss << pragam["json版本号"];
     if (jsonVal["json版本号"] < pragam["json版本号"])
     {
-        float temp = pragam["json版本号"]; //先存下新的版本号
-        pragam.merge_patch(jsonVal);       //用新的合并老的数据 把SD卡数据替换默认数据
-        jsonVal = pragam;
-        std::stringstream oss;     //主要为了去掉小数点后多余的0 默认3位
-        oss.setf(std::ios::fixed); //用定点格式显示浮点数,不会用科学计数法表示
-        oss.precision(1);          //由于用了定点格式，设置变为了保留1位小数
-        oss << temp;
+        upDateJson(jsonVal, pragam);
         oss >> jsonVal["json版本号"];
+        logger->debug({"json版本升级为:", oss.str().c_str()});
         saveData();
-        logger->debug({"json版本升级为:", std::to_string(jsonVal["json版本号"].get<double>())});
     }
+    else
+        logger->info({"json当前为最新版本:", oss.str().c_str()});
     fclose(file);
     return true;
+}
+void SysBase::upDateJson(json &source, const json &target)
+{
+    if (source.type() == target.type())
+        switch (source.type())
+        {
+            case json::value_t::object:
+            {
+                //第一遍：遍历机器人文件的的元素
+                for (auto it = source.begin(); it != source.end(); ++it)
+                {
+                    if (target.find(it.key()) != target.end())
+                    {
+                        //递归调用以比较对象的对象值
+                        upDateJson(it.value(), target[it.key()]);
+                    }
+                    else
+                    {
+                        //找到一个不在o中的键 ->删除它
+                        source.erase(it);
+                        logger->debug({"删除: ", it.key()});
+                    }
+                }
+                //第二遍：遍历用户数据里的元素
+                for (auto it = target.begin(); it != target.end(); ++it)
+                {
+                    if (source.find(it.key()) == source.end()) //如果机器人文件没找到和目标文件里同名的元素
+                    {
+                        //添加他
+                        source[it.key()] = it.value();
+                        logger->debug({"添加: ", it.key()});
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    return;
 }
 /**
  * 以vector 容器为基础修改保存文件
@@ -83,7 +127,48 @@ bool SysBase::saveData()
     fclose(file);
     return true;
 }
-
+void SysBase::i2cCheck(const int port, const std::string name)
+{
+    for (auto it = _i2cPort.begin(); it != _i2cPort.end(); it++)
+    {
+        if (*it == port)
+        {
+            _i2cPort.erase(it);
+            break;
+        }
+        if (it == _i2cPort.end())
+            logger->error({name, "端口:", std::to_string(port), "冲突!,请检查配置"});
+    }
+}
+void SysBase::adiCheck(const int port, const std::string name)
+{
+    for (auto it = _adiPort.begin(); it != _adiPort.end(); it++)
+    {
+        if (*it == port)
+        {
+            _adiPort.erase(it);
+            break;
+        }
+        if (it == _adiPort.end())
+            logger->error({name, "端口:", std::to_string(port), "冲突!,请检查配置"});
+    }
+}
+void SysBase::adiCheck(const std::pair<int, int> port, const std::string name)
+{
+    int count = 0;
+    for (auto it = _adiPort.begin(); it != _adiPort.end(); it++)
+    {
+        if (*it == port.first || *it == port.second)
+        {
+            _adiPort.erase(it);
+            count++;
+            if (count == 2)
+                break;
+        }
+        if (it == _adiPort.end())
+            logger->error({name, "端口:", std::to_string(port.first), " ", std::to_string(port.second), "冲突!,请检查配置"});
+    }
+}
 /**
     *增加部件名字 
     * @param str 部件的名字

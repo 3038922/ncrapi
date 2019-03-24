@@ -24,6 +24,12 @@ class Chassis : public Obj
 {
   public:
     Chassis(const json &pragma);
+    /**
+     * @brief 开环红纸底盘左右轮速度
+     * 
+     * @param left 左轮速度+-127 +前进 -后退
+     * @param right  右轮速度+-127 +前进 -后退
+     */
     void set(const int left, const int right);
     /**
     设定电机的速度。
@@ -38,11 +44,7 @@ class Chassis : public Obj
     *失败，设置错误。
      */
     void moveVelocity(const std::int32_t left, const std::int32_t right);
-    /**
-     *以电压方式控制电机正转反转 
-     * @param voltage  电压 -120 +120
-     */
-    void moveVoltage(const double left, const double right);
+
     /**
 *设置要移动到的电机的相对目标位置。
 *此运动与pros :: Motor :: motor_get_position（）中给出的电机当前位置有关。提供10.0作为位置参数将导致电机顺时针移动10个单位，无论当前位置如何。
@@ -61,11 +63,7 @@ class Chassis : public Obj
      * @param velocity 设定的速度 上限红齿轮+-100 绿齿轮+-200 蓝齿轮+-600
      */
     void forwardVelocity(const int32_t velocity);
-    /**
-     * 使用电压环进行前后控制
-     * @param velocity -120 +120
-     */
-    void forwardVoltage(const double voltage);
+
     /**
      *使用电机内置闭环 让底盘前进或者后退        
      * @param pos 前进的距离 电机一圈360 自己换算
@@ -88,11 +86,7 @@ class Chassis : public Obj
      * @param velocity 速度 红尺寸+100 绿齿轮最大速度+200 蓝齿轮+600 
      */
     void rotateReative(const double pos, const std::int32_t velocity);
-    /**
-     * 使用电压环进行左右控制
-     * @param velocity 左+120 右-120
-     */
-    void rotateVoltage(const double voltage);
+
     /**
      * 底盘马达停转
      */
@@ -156,15 +150,22 @@ class Chassis : public Obj
     virtual void showSensor() override;
     virtual const std::string showName() const override;
     virtual void showDetailedInfo() override;
+    /**
+     * @brief 设置模式
+     * 
+     * @param mode 模式0 使用用户自定义开环 模式1 使用V5内置速度环
+     */
+    virtual void setMode(const int mode) override;
 
   protected:
     const std::string _name;
     std::vector<Motor> _motorList;
     int _joyThreshold = 10, _maxRotateSpd = 127;
-
+    int _spdRange = 127;
     size_t _sideNums = 0; //半边马达数量
     int _pwm[2];          //0 左边pwm 1 右边pwm
     Timer _timerTemp;     //系统计时器
     size_t _gearing;      //齿轮最大速度
+    int _mode = 0;        //模式0 使用用户自定义开环 模式1 使用V5内置速度环
 };
 } // namespace ncrapi

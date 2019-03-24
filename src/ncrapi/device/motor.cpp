@@ -8,12 +8,14 @@ namespace ncrapi
 Motor::Motor(const std::string &name, const int &port, const bool &isRevase, const int &gearset) : _port(port), _name(name),
                                                                                                    pros::Motor(port)
 {
+    sysData->i2cCheck(_port, _name);
     init(clamp<int>(gearset, 0, 2, "马达齿轮"));
 }
 Motor::Motor(const std::string &name, const json &pragma) : _name(name),
                                                             _port(pragma["端口"].get<int>()),
                                                             pros::Motor(pragma["端口"].get<int>(), pragma["正反"].get<bool>())
 {
+    sysData->i2cCheck(_port, _name);
     init(clamp<int>(pragma["齿轮"].get<int>(), 0, 2, "马达齿轮"));
 }
 

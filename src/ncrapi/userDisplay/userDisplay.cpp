@@ -89,7 +89,7 @@ void UserDisplay::createUserObj(obj_flag objname, bool isSrcLoad, const char *te
 
     if (labText != nullptr)
     {
-        lv_obj_t *lab = lv_label_create(userDisplay->displayObj[objname], nullptr);
+        lv_obj_t *lab = lv_label_create(displayObj[objname], nullptr);
         lv_label_set_text(lab, labText);
     }
 }
@@ -116,7 +116,7 @@ void UserDisplay::createUserTask(task_flag taskName, void (*task)(void *), uint3
 void UserDisplay::delTasks()
 {
     unsigned int flag = 1;
-    for (auto &it : userDisplay->displayTask)
+    for (auto &it : displayTask)
     {
         if (it != nullptr)
         {
@@ -133,7 +133,7 @@ void UserDisplay::delTasks()
 void UserDisplay::delObjs()
 {
     unsigned int flag = 1;
-    for (auto &it : userDisplay->displayObj)
+    for (auto &it : displayObj)
     {
         if (it != nullptr)
         {
@@ -143,6 +143,13 @@ void UserDisplay::delObjs()
             flag++;
         }
     }
+}
+void UserDisplay::drawRectangle(lv_obj_t *obj, const pros::vision_object &data, lv_style_t *style)
+{
+    lv_obj_set_hidden(obj, false);
+    lv_obj_set_style(obj, style);
+    lv_obj_set_pos(obj, data.left_coord, data.top_coord);
+    lv_obj_set_size(obj, data.width, data.height);
 }
 /**
  * 用于获取系统LOOP时间的静态函数 
@@ -162,29 +169,17 @@ void UserDisplay::loopTask(void *param)
 void UserDisplay::createOpObj(const std::string &userInfo)
 {
     delTasks();
-    createUserTask(TASK_LOOP, loopTask, 100, "循环时间条");
     delObjs();
     createUserObj(OBJ_OPCONTROL, true, "遥控");
     if (!pros::competition::is_connected()) //没插场控
-        createStartObj();
+        createStartObj(displayObj[OBJ_OPCONTROL], LV_HOR_RES, LV_VER_RES - 20);
     lv_obj_t *robotInfoLab = lv_label_create(displayObj[OBJ_OPCONTROL], nullptr);
     lv_obj_set_x(robotInfoLab, LV_HOR_RES / 2 - 30);
     lv_label_set_static_text(robotInfoLab, userInfo.c_str());
     loopLab = lv_label_create(displayObj[OBJ_OPCONTROL], nullptr);
-    loopTask(nullptr);
+    createUserTask(TASK_LOOP, loopTask, 100, "循环时间条");
 }
 
-void UserDisplay::sensorsTask(void *param)
-{
-    (void)param;                                                             /*Unused*/
-    userDisplay->ostr.clear();                                               //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
-    userDisplay->ostr.str("");                                               //2：调用str("")将缓冲区清零，清除脏数据
-    userDisplay->ostr << std::fixed << std::setprecision(1) << std::setw(6); //流操纵算子
-    for (auto &it : sysData->obj)
-        it->showSensor();
-    std::string temp = userDisplay->ostr.str();
-    lv_label_set_text(userDisplay->otherLab, temp.c_str());
-}
 /**
  * 自动赛选择时候的确认按钮的动作
  * @param  btn 要实现动作的按钮的指针
@@ -193,7 +188,6 @@ void UserDisplay::sensorsTask(void *param)
 
 lv_res_t UserDisplay::confirmBtnIncomp(lv_obj_t *btn)
 {
-    int i = 0;
     sysData->saveData();
     //获取开关状态
     std::string str;
@@ -211,28 +205,29 @@ lv_res_t UserDisplay::confirmBtnIncomp(lv_obj_t *btn)
         }
         else
             logger->error({"自动赛json选项设置错误 请用&间隔"});
-        i++;
     }
     // 创建确认页面
     lv_obj_t *confirm = lv_obj_create(userDisplay->displayObj[OBJ_COMPETITION], nullptr);
+
     lv_obj_set_size(confirm, LV_HOR_RES, LV_VER_RES);
     lv_obj_set_style(confirm, &userDisplay->mainStyle);
+    userDisplay->createStartObj(confirm, LV_HOR_RES, LV_VER_RES - 5);
     //显示自动赛选项
-    lv_obj_t *autoinfoLab = lv_label_create(confirm, nullptr); //创建LAB条
-    userDisplay->ostr.clear();                                 //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
-    userDisplay->ostr.str("");                                 //2：调用str("")将缓冲区清零，清除脏数据
+    lv_obj_t *autoinfoLab = lv_label_create(userDisplay->displayObj[BTNM_START], nullptr); //创建LAB条
+    userDisplay->ostr.clear();                                                             //1：调用clear()清除当前错误控制状态，其原型为 void clear (iostate state=goodbit);
+    userDisplay->ostr.str("");                                                             //2：调用str("")将缓冲区清零，清除脏数据
     userDisplay->ostr << str << std::endl;
     lv_label_set_text(autoinfoLab, userDisplay->ostr.str().c_str());
-    // 传感器页面创建
-
-    userDisplay->otherLab = lv_label_create(confirm, nullptr);                       //创建基于INFOObj的标签
-    lv_obj_align(userDisplay->otherLab, autoinfoLab, LV_ALIGN_OUT_RIGHT_TOP, 20, 0); //设置传感器栏目位置
-    //重置传感器按钮
-    userDisplay->createResetBtn(OBJ_COMPETITION, LV_HOR_RES - 80, LV_VER_RES - 30);
-    userDisplay->createUserTask(TASK_OTHER, sensorsTask, 100, "sensorInfo"); //创建一个线程
-    return LV_RES_OK;
+    lv_obj_align(autoinfoLab, userDisplay->displayObj[BTNM_START], LV_ALIGN_IN_TOP_MID, 0, 0);
+    return LV_RES_INV;
 }
-
+lv_res_t UserDisplay::confirmBtnInOdom(lv_obj_t *btn)
+{
+    sysData->saveData();
+    lv_obj_del(userDisplay->displayObj[OBJ_COMPETITION]);
+    userDisplay->displayObj[OBJ_COMPETITION] = nullptr;
+    return LV_RES_INV;
+}
 /**
  * 标签栏按下后的动作
  * @param tab 标签
@@ -243,24 +238,26 @@ void UserDisplay::compTabChose(lv_obj_t *tab, uint16_t x)
     (void)tab; /*Unused*/
     if (x == 0)
     {
-        sysData->jsonVal["自动赛"]["红方&蓝方"] = false; //红方0
+        sysData->jsonVal["自动赛"]["红方&蓝方"] = false;     //红方0
+        sysData->jsonVal["自动赛"]["自动赛&纯自动"] = false; //红方0
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
         userDisplay->mainStyle.body.main_color = LV_COLOR_RED;
     }
     else if (x == 1)
     {
-        sysData->jsonVal["自动赛"]["红方&蓝方"] = true; //红方0
+        sysData->jsonVal["自动赛"]["红方&蓝方"] = true;      //红方0
+        sysData->jsonVal["自动赛"]["自动赛&纯自动"] = false; //蓝方
         userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
         userDisplay->mainStyle.body.main_color = LV_COLOR_BLUE;
     }
+    else if (x == 2)
+    {
+        sysData->jsonVal["自动赛"]["自动赛&纯自动"] = true; //红方0
+        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLACK;
+        userDisplay->mainStyle.body.main_color = LV_COLOR_BLACK;
+    }
     //应用全局样式
     lv_theme_set_current(userDisplay->theme);
-    // else if (x == 2)
-    // {
-    //     sysData->autoIsMode = 1; //纯自动
-    //     sysData->autoSide = 0;   //技能赛默认红方
-    //     userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLACK;
-    // }
 }
 lv_res_t UserDisplay::swAction(lv_obj_t *sw) //SW的动作
 {
@@ -268,17 +265,22 @@ lv_res_t UserDisplay::swAction(lv_obj_t *sw) //SW的动作
     *tempData = lv_sw_get_state(sw);
     return LV_RES_OK;
 }
-void UserDisplay::createCompe()
+void UserDisplay::createCompe(lv_obj_t *parent)
 {
-    delTasks();
-    delObjs();
-    createUserObj(OBJ_COMPETITION, true, "竞赛等待");
+    if (parent == nullptr)
+    {
+        delTasks();
+        delObjs();
+        createUserObj(OBJ_COMPETITION, true, "竞赛等待");
+    }
+    else
+        createUserObj(OBJ_COMPETITION, false, "竞赛等待", parent);
     //创建标签栏
     lv_obj_t *tab = lv_tabview_create(displayObj[OBJ_COMPETITION], nullptr);
     lv_obj_set_size(tab, LV_HOR_RES, LV_VER_RES); //设置位置
     lv_obj_t *redTab = lv_tabview_add_tab(tab, "红方");
     lv_obj_t *blueTab = lv_tabview_add_tab(tab, "蓝方");
-    //lv_obj_t *skillAutoTab = lv_tabview_add_tab(tab, "技能赛");
+    lv_obj_t *skillTab = lv_tabview_add_tab(tab, "纯自动");
     lv_tabview_set_tab_act(tab, sysData->jsonVal["自动赛"]["红方&蓝方"].get<uint16_t>(), false); //设置默认红方还是蓝方
     /*当选项卡按下后进行的操作*/
     lv_tabview_set_tab_load_action(tab, compTabChose);
@@ -287,7 +289,7 @@ void UserDisplay::createCompe()
     //创建各种开关和文本条 附带位置设置
     for (auto &it : sysData->jsonVal["自动赛"].items())
     {
-        if (it.key() != "红方&蓝方")
+        if (it.key() != "红方&蓝方" && it.key() != "自动赛&纯自动")
         {
             compSw.push_back(std::make_pair(lv_label_create(displayObj[OBJ_COMPETITION], nullptr), lv_sw_create(displayObj[OBJ_COMPETITION], nullptr))); //创建文本条和开关
             lv_label_set_text(compSw.back().first, it.key().c_str());                                                                                    /*设置文字*/
@@ -313,12 +315,16 @@ void UserDisplay::createCompe()
     //确认按钮设置
     lv_obj_t *confirmBtn = lv_btn_create(displayObj[OBJ_COMPETITION], nullptr); //创建确认开关
     lv_obj_t *confirmLab = lv_label_create(confirmBtn, nullptr);                //创建确认开关文本 这里设置按钮为父级
-    lv_label_set_text(confirmLab, "确认");
-    lv_obj_set_size(confirmBtn, 200, 50); //大小设置
+    lv_label_set_text(confirmLab, "确\n认");
+    lv_obj_set_size(confirmBtn, 40, 100); //大小设置
     //设置确定按钮和其文本框的位置
-    lv_obj_set_pos(confirmBtn, LV_HOR_RES - 200, LV_VER_RES - 50);
+    lv_obj_align(confirmBtn, displayObj[OBJ_COMPETITION], LV_ALIGN_CENTER, -20, 0);
+
     //确认按钮的动作
-    lv_btn_set_action(confirmBtn, LV_BTN_ACTION_PR, confirmBtnIncomp);
+    if (parent == nullptr)
+        lv_btn_set_action(confirmBtn, LV_BTN_ACTION_CLICK, confirmBtnIncomp);
+    else
+        lv_btn_set_action(confirmBtn, LV_BTN_ACTION_CLICK, confirmBtnInOdom);
     //调用按钮页面
     //TODO 技能赛的动作
 }
@@ -341,6 +347,7 @@ lv_res_t UserDisplay::closeAction(lv_obj_t *btn)
     }
     if (sysData->isOPcontrol == false)
         sysData->isOPcontrol = true;
+
     return LV_RES_INV;
 }
 void UserDisplay::createVersion(lv_obj_t *parent)
@@ -358,19 +365,63 @@ void UserDisplay::createVersion(lv_obj_t *parent)
                       << "NCRAPI版本:" << NCR_VERSION_STRING << std::endl;
     lv_label_set_text(verLab, userDisplay->ostr.str().c_str());
 }
+
+void UserDisplay::createStartObj(lv_obj_t *parent, size_t hor, size_t ver)
+{
+    static const char *startBtnm[] = {"系统信息", "日志信息", "\n",
+                                      "全局参数设置", "维护信息", "\n",
+                                      "PID调试", "视觉传感器设置", "\n",
+                                      "ODOM测试", "版本号", ""};
+    if (displayObj[BTNM_START] == nullptr)
+        displayObj[BTNM_START] = lv_btnm_create(parent, nullptr); //创建按钮集群
+
+    lv_btnm_set_map(displayObj[BTNM_START], startBtnm);
+    lv_obj_set_size(displayObj[BTNM_START], hor, ver);
+    lv_obj_set_y(displayObj[BTNM_START], LV_VER_RES - ver);
+    lv_btnm_set_action(displayObj[BTNM_START], startBtnmAction);
+}
+/**
+ * 按钮阵列的动作
+ * @param  btnm 按钮阵列
+ * @param  txt  按钮的名字
+ * @return      系统值
+ */
+lv_res_t UserDisplay::startBtnmAction(lv_obj_t *btnm, const char *txt)
+{
+    (void)btnm; /*Unused*/
+    if (!strcmp(txt, "系统信息"))
+        userDisplay->createSysInfo(userDisplay->displayObj[BTNM_START]); //1
+    else if (!strcmp(txt, "全局参数设置"))
+        userDisplay->createConfig(userDisplay->displayObj[BTNM_START]); //2 创建CONFIGSET页面
+    else if (!strcmp(txt, "维护信息"))
+        userDisplay->createMaintenanceInfo(userDisplay->displayObj[BTNM_START]); //3
+    else if (!strcmp(txt, "视觉传感器设置"))
+        userDisplay->createVision(userDisplay->displayObj[BTNM_START]); //4创建视觉页面
+    else if (!strcmp(txt, "版本号"))
+        userDisplay->createVersion(userDisplay->displayObj[BTNM_START]); //5
+    else if (!strcmp(txt, "日志信息"))
+        userDisplay->createDebug(userDisplay->displayObj[BTNM_START]); //6
+    else if (!strcmp(txt, "PID调试"))
+        userDisplay->createPidTest(userDisplay->displayObj[BTNM_START]); //7
+    else if (!strcmp(txt, "ODOM测试"))
+        userDisplay->createOdom(userDisplay->displayObj[BTNM_START]); //8
+    logger->info({"选择 ", txt});
+    return LV_RES_INV;
+}
+
 lv_res_t UserDisplay::resetAction(lv_obj_t *btn)
 {
     (void)btn; /*Unused*/
     for (auto &it : sysData->obj)
         it->resetAllSensors();
-    return LV_RES_INV;
+    return LV_RES_OK;
 }
 lv_res_t UserDisplay::saveAction(lv_obj_t *btn)
 {
     json *tempData = static_cast<json *>(lv_obj_get_free_ptr(btn));
     sysData->jsonVal = *tempData;
     sysData->saveData();
-    return LV_RES_INV;
+    return LV_RES_OK;
 }
 lv_res_t UserDisplay::upDownAction(lv_obj_t *btnm, const char *txt)
 {

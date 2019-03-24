@@ -27,6 +27,10 @@ Generic::Generic(const std::string &name, const json &pragma) : _name(name)
     resetEnc();
     logger->info({"部件:", _name, " 构造成功"});
 }
+int Generic::getHoldingVal()
+{
+    return _holdVal;
+}
 /**
      * 初始化函数
      * @param lab 进度条 
@@ -35,14 +39,18 @@ Generic::Generic(const std::string &name, const json &pragma) : _name(name)
      */
 void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
 {
-    lv_label_set_text(lab, str);
-    for (auto &it : _motorList)
-        it.move(pwm);
-    pros::delay(500);
-    while ((_encNow != _encLast) && _encLast != 0)
-        pros::delay(20);
-    for (auto &it : _motorList)
-        it.move(0);
+    lv_label_ins_text(lab, LV_LABEL_POS_LAST, str);
+    size_t count = 0;
+    while (count < 5 || isSafeMode())
+    {
+        Generic::set(pwm);
+        if (_encNow == _encLast)
+            count++;
+        else
+            count = 0;
+        pros::delay(10);
+    }
+    Generic::set(0);
     resetEnc();
     _isInit = true;
 }
@@ -53,7 +61,7 @@ void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
      */
 void Generic::set(const int pwm)
 {
-    _encLast = _encNow;
+    _encLast = _encNow; //在外面调取的话 要把这个写前面
     _openLoopVal = clamp(pwm, -127, 127);
     if (isSafeMode())
         _openLoopVal = _holdVal * _holdingFlag;
@@ -114,6 +122,11 @@ void Generic::moveRelative(const double position, const std::int32_t velocity)
     for (auto &it : _motorList)
         it.move_relative(position, velocity);
 }
+void Generic::setTarget(const int target)
+{
+    setMode(-2);
+    _target = target;
+}
 /**
     设定电机的速度。
     *
@@ -147,6 +160,8 @@ void Generic::holding()
     else if (_mode == 0)
         set(_holdVal * _holdingFlag);
 
+    else if (_mode == -2)
+        set(clamp(static_cast<int>(_target - _encNow), -127, 127));
     else
         ;
 }
@@ -170,6 +185,8 @@ int Generic::getMode()
 
 void Generic::joyControl(std::shared_ptr<pros::Controller> joy, pros::controller_digital_e_t up, pros::controller_digital_e_t down)
 {
+    if (_thisJoy == nullptr)
+        _thisJoy = joy; //赋地址
     if (joy->get_digital(up))
     {
         set(127);
@@ -302,7 +319,7 @@ double Generic::getTemperature()
      */
 bool Generic::isSafeMode()
 {
-    if (fabs(getSpeed()) <= _gearing / 10 && abs(_openLoopVal) > _holdVal)
+    if (fabs(getSpeed()) <= _gearing / 10 && abs(_openLoopVal) > _holdVal * 2)
     {
         _safeModeFlags++;
         if (_safeModeFlags > 10)

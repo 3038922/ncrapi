@@ -22,12 +22,12 @@ namespace ncrapi
 #define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
-Logger::Logger(const size_t Level)
+Logger::Logger(const size_t Level) : _lever(Level)
 {
     for (size_t i = 0; i <= Level; i++)
     {
-        _data.push_back(fopen(_level[i].c_str(), "a"));
-        if (_data.back() == nullptr)
+        _data[i] = fopen(_level[i].c_str(), "a");
+        if (_data[i] == nullptr)
             std::cerr << _level[i] << " 创建失败,请检查SD卡!" << std::endl;
         else
             std::cout << _level[i] << " 创建成功" << std::endl;
@@ -103,7 +103,7 @@ bool Logger::clean(LEVEL level)
 }
 size_t Logger::getLevel()
 {
-    return (_data.size() - 1);
+    return _lever;
 }
 void Logger::output(std::initializer_list<std::string> &val)
 {

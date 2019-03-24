@@ -2,6 +2,7 @@
 #include "display/lv_conf.h"
 #include "display/lvgl.h"
 #include "ncrapi/system/json.hpp"
+#include "pros/vision.h"
 #include <array>
 #include <iostream>
 #include <memory>
@@ -53,15 +54,17 @@ class UserDisplay
     UserDisplay();
     void delObjs();
     void delTasks();
+    void drawRectangle(lv_obj_t *obj, const pros::vision_object &data, lv_style_t *style);
     void createUserObj(obj_flag objname, bool isSrcLoad, const char *terminalText, lv_obj_t *parent = nullptr, const char *labText = nullptr);
     void createUserTask(task_flag taskName, void (*task)(void *), uint32_t loopTime, const char *terminalText, void *pragma = nullptr);
-    void createCompe();                                  //自动赛选择页面
+    void createCompe(lv_obj_t *parent = nullptr);        //自动赛选择页面
     static void compTabChose(lv_obj_t *tab, uint16_t x); //用于自动赛选择的静态函数
+    static lv_res_t confirmBtnInOdom(lv_obj_t *btn);     //用于ODOM自动赛选择的静态动作函数
     static lv_res_t confirmBtnIncomp(lv_obj_t *btn);     //用于自动赛确认页面的静态函数
     void createOpObj(const std::string &userInfo);
     static void loopTask(void *param); //获取时间的线程
 
-    void createStartObj();
+    void createStartObj(lv_obj_t *parent, size_t hor, size_t ver);
     void createVersion(lv_obj_t *parent);         //1
     void createConfig(lv_obj_t *parent);          //2
     void createVision(lv_obj_t *parent);          //3
@@ -75,7 +78,7 @@ class UserDisplay
     void createSaveBtn(obj_flag objname, const int x = LV_HOR_RES - 140, const int y = LV_VER_RES - 50, const int width = 50, const int high = 25); //创建保存按钮
     void createResetBtn(obj_flag objname, const int x, const int y, const int width = 50, const int high = 25);                                     //创建重制传感器按钮
     void createMbox(obj_flag objname, const char *txt1, const char *txt2, const char *txt3, lv_btnm_action_t action);                               //创建一个消息框
-    static void sensorsTask(void *param);                                                                                                           //用于传感器信息实时输出的线程
+    static lv_res_t startBtnmAction(lv_obj_t *btnm, const char *txt);                                                                               //启动页面动作
     static lv_res_t closeAction(lv_obj_t *btn);                                                                                                     //退出按钮的动作
     static lv_res_t resetAction(lv_obj_t *btn);                                                                                                     //重置按钮的动作
     static lv_res_t saveAction(lv_obj_t *btn);                                                                                                      //保存按钮的动作

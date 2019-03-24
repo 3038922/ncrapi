@@ -22,10 +22,13 @@ Chassis::Chassis(const json &pragma) : _name("底盘")
     _gearing = _motorList.begin()->getGearSpeed();
     sysData->addObj(this);
     resetEnc();
+    setMode(clamp<int>(pragma["参数"]["模式"].get<int>(), 0, 1, "底盘模式"));
     logger->info({"底盘基类构造成功"});
 }
 void Chassis::set(const int left, const int right)
 {
+    if (_mode != 0)
+        setMode(0);
     _pwm[0] = left;
     _pwm[1] = right;
     for (size_t i = 0; i < _sideNums; i++)
@@ -53,24 +56,20 @@ void Chassis::set(const int left, const int right)
      */
 void Chassis::moveVelocity(const std::int32_t left, const std::int32_t right)
 {
+    if (_mode != 1)
+        setMode(1);
     for (size_t i = 0; i < _sideNums; i++)
     {
         _motorList[i].move_velocity(left);
         _motorList[i + _sideNums].move_velocity(right);
     }
-}
-/**
-     *以电压方式控制电机正转反转 
-     * @param voltage  电压 -120 +120
-     */
-void Chassis::moveVoltage(const double left, const double right)
-{
-    for (size_t i = 0; i < _sideNums; i++)
+    if ((getTemperature(0) >= 50 || getTemperature(1) >= 50) && _timerTemp.getDtFromMark() >= 15000)
     {
-        _motorList[i].move_voltage(static_cast<int32_t>(left * 100));
-        _motorList[i + _sideNums].move_voltage(static_cast<int32_t>(right * 100));
+        logger->error({"底盘马达过热!"});
+        _timerTemp.placeMark();
     }
 }
+
 void Chassis::moveRelative(const double leftPos, const double rightPos, const std::int32_t velocity)
 {
     for (size_t i = 0; i < _sideNums; i++)
@@ -96,14 +95,7 @@ void Chassis::forwardVelocity(const int32_t velocity)
 {
     moveVelocity(velocity, velocity);
 }
-/**
-     * 使用电压环进行前后控制
-     * @param velocity -120 +120
-     */
-void Chassis::forwardVoltage(const double voltage)
-{
-    moveVoltage(voltage, voltage);
-}
+
 void Chassis::forwardRelative(const double pos, const std::int32_t velocity)
 {
     moveRelative(pos, pos, velocity);
@@ -129,20 +121,16 @@ void Chassis::rotateReative(const double pos, const std::int32_t velocity)
 {
     moveRelative(pos, -pos, velocity);
 }
-/**
-     * 使用电压环进行左右控制
-     * @param velocity 左+120 右-120
-     */
-void Chassis::rotateVoltage(const double voltage)
-{
-    moveVoltage(-voltage, voltage);
-}
+
 /**
      * 底盘马达停转
      */
 void Chassis::stop()
 {
-    set(0, 0);
+    if (_mode == 0)
+        set(0, 0);
+    else
+        moveVelocity(0, 0);
 }
 /**
      * 矢量控制 开弧线
@@ -152,9 +140,15 @@ void Chassis::stop()
      */
 void Chassis::driveVector(const int distPwm, const int anglePwm, const int speedMode[128]) //开弧线
 {
-    int left = clamp(distPwm + anglePwm, -127, 127);
-    int right = clamp(distPwm - anglePwm, -127, 127);
-    set(speedMode[abs(left)] * copySign(left), speedMode[abs(right)] * copySign(right));
+    int left = clamp(distPwm - anglePwm, -_spdRange, _spdRange);
+    int right = clamp(distPwm + anglePwm, -_spdRange, _spdRange);
+    if (_mode == 0)
+        set(speedMode[abs(left)] * copySign(left), speedMode[abs(right)] * copySign(right));
+    else
+    {
+        double flag = _gearing / 127.0;
+        moveVelocity(left * flag, right * flag);
+    }
 }
 
 /**
@@ -167,7 +161,7 @@ void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_ana
 {
 
     int x = joy->get_analog(verticalVal);
-    int y = joy->get_analog(horizontalVal);
+    int y = -joy->get_analog(horizontalVal);
     if (abs(x) < _joyThreshold)
         x = 0;
     if (abs(y) < _joyThreshold)
@@ -225,6 +219,22 @@ double Chassis::getSpeed(const bool side)
     if (side == 1)
         i = _sideNums;
     return _motorList[i].get_actual_velocity();
+}
+void Chassis::setMode(const int mode)
+{
+    _mode = mode;
+    if (_mode == 0)
+    {
+        _spdRange = 127;
+        _maxRotateSpd = sysData->jsonVal["底盘"]["参数"]["最大旋转速度"].get<int>();
+        logger->debug({"底盘切换为开环控制"});
+    }
+    else
+    {
+        _spdRange = _gearing;
+        _maxRotateSpd = sysData->jsonVal["底盘"]["参数"]["最大旋转速度"].get<int>() * _gearing / 127;
+        logger->debug({"底盘切换为V5速度环控制"});
+    }
 }
 
 /**

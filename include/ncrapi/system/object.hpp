@@ -5,8 +5,11 @@
 // #pragma GCC diagnostic ignored "-Wunused-parameter"
 // #include <vector>
 // #pragma GCC diagnostic pop
+#define PROS_USE_SIMPLE_NAMES
 
-namespace ncrapi {
+#define PROS_USE_LITERALS
+namespace ncrapi
+{
 class Obj
 {
   public:
@@ -15,5 +18,6 @@ class Obj
     virtual void showDetailedInfo() = 0;
     virtual void resetAllSensors() = 0;
     virtual void stop() = 0;
+    virtual void setMode(int flag) = 0;
 };
 } // namespace ncrapi
