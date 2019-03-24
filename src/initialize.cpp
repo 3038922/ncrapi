@@ -21,33 +21,6 @@ std::shared_ptr<ncrapi::Generic> catapule = nullptr;   //弹射
 std::shared_ptr<ncrapi::Generic> ballintake = nullptr; //吸吐
 std::shared_ptr<ncrapi::Generic> cap = nullptr;        //夹子
 
-//消息框动作函数
-lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
-{
-    if (!strcmp(txt, "红方"))
-    {
-        // sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->jsonVal["自动赛"]["红方&蓝方"] = false;
-        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_RED;
-        userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_RED;
-        userDisplay->mainStyle.body.main_color = LV_COLOR_RED;
-        lv_mbox_set_text(lv_mbox_get_from_btn(mbox), txt);
-        sysData->saveData();
-        lv_obj_del(mbox);
-    }
-    if (!strcmp(txt, "蓝方"))
-    {
-        //   sysData->autoIsMode = 0; //普通自动赛模式
-        sysData->jsonVal["自动赛"]["红方&蓝方"] = true;
-        userDisplay->theme->tabview.bg->body.main_color = LV_COLOR_BLUE;
-        userDisplay->theme->mbox.bg->body.main_color = LV_COLOR_BLUE;
-        userDisplay->mainStyle.body.main_color = LV_COLOR_BLUE;
-        lv_mbox_set_text(lv_mbox_get_from_btn(mbox), txt);
-        sysData->saveData();
-        lv_obj_del(mbox);
-    }
-    return LV_RES_INV; /*Return OK if the message box is not deleted*/
-}
 /**
  * 初始化函数
  */
@@ -55,38 +28,38 @@ lv_res_t choseSideAction(lv_obj_t *mbox, const char *txt)
 void initialize()
 
 {
+
     //系统日志初始化
-    logger = std::make_unique<ncrapi::Logger>(3);
+    logger = std::make_unique<ncrapi::Logger>(2);
     //系统初始化
     sysData = std::make_unique<ncrapi::SysBase>(userData);
     //显示初始化
     userDisplay = std::make_unique<ncrapi::UserDisplay>();
-    userDisplay->createMbox(OBJ_BTNM_SON, "请选择红蓝方(默认红方)", "红方", "蓝方", choseSideAction);
     lv_obj_t *lab1 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
+    lv_obj_set_y(lab1, 40);
     //遥控器初始化
     lv_label_set_text(lab1, "遥控器初始化中...");
     joy1 = std::make_shared<pros::Controller>(CONTROLLER_MASTER); //主遥控器
     //显示用户信息
     lv_obj_t *lab2 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
-    lv_obj_set_y(lab2, 20);
     std::stringstream oss;
     oss << userData["系统信息"]["机器人类型"].get<std::string>() << " " << userData["系统信息"]["队伍编号"].get<std::string>() << " "
         << userData["系统信息"]["用户"].get<std::string>() << "\n版本号:" << NCR_VERSION_STRING;
     lv_label_set_text(lab2, oss.str().c_str());
 
     //demo for nancy
-    lv_label_set_text(lab1, "底盘初始化中...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n底盘初始化中...");
     chassis = std::make_shared<ncrapi::Chassis>(sysData->jsonVal["底盘"]);
-    lv_label_set_text(lab1, "升降初始化中...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n升降初始化中...");
     lift = std::make_shared<ncrapi::Generic>("升降", sysData->jsonVal["升降"]);
-    lv_label_set_text(lab1, "弹射初始化中...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n弹射初始化中...");
     catapule = std::make_shared<ncrapi::Generic>("弹射", sysData->jsonVal["弹射"]);
-    lv_label_set_text(lab1, "吸吐初始化中...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n吸吐初始化中...");
     ballintake = std::make_shared<ncrapi::Generic>("吸吐", sysData->jsonVal["吸吐"]);
-    lv_label_set_text(lab1, "夹子初始化中...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n盘子夹初始化中...");
     cap = std::make_shared<ncrapi::Generic>("夹子", sysData->jsonVal["夹子"]);
-    //demo for nancy
-    lv_label_set_text(lab1, "机器人初始化完毕...");
+    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n机器人初始化完毕...");
+    logger->info({"机器人初始化完毕"});
     lv_obj_del(userDisplay->displayObj[OBJ_BTNM_SON]);
     userDisplay->displayObj[OBJ_BTNM_SON] = nullptr;
 }

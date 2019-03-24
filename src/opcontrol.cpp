@@ -11,25 +11,28 @@
 void opcontrol()
 {
     userDisplay->createOpObj(sysData->robotInfo);
-    uint32_t nowTime = pros::millis();
-    uint32_t lastTime = pros::millis();
+    ncrapi::Timer loopTime;
+    uint32_t nowTime = loopTime.getNowTime();
 
     while (true)
     {
-        nowTime = pros::millis();
-        userDisplay->loopTime = nowTime - lastTime;
+        userDisplay->loopTime = loopTime.getDt();
         if (userDisplay->loopTime > userDisplay->maxLoopTime)
             userDisplay->maxLoopTime = userDisplay->loopTime;
         if (userDisplay->loopTime < userDisplay->minLoopTime)
             userDisplay->minLoopTime = userDisplay->loopTime;
         //demo for nancy
-        chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X); //底盘遥控
-        lift->joyControl(joy1, DIGITAL_L1, DIGITAL_L2);       //升降
-        catapule->joyControl(joy1, DIGITAL_A, DIGITAL_B);     //弹射
-        ballintake->joyControl(joy1, DIGITAL_X, DIGITAL_Y);   //吸吐
-        cap->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);        //盘子夹
-        //demo for nancy
-        lastTime = nowTime;
+        if (sysData->isOPcontrol)
+        {
+            chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X); //底盘遥控
+            lift->joyControl(joy1, DIGITAL_L1, DIGITAL_L2);       //升降
+            catapule->joyControl(joy1, DIGITAL_A, DIGITAL_B);     //弹射
+            ballintake->joyControl(joy1, DIGITAL_X, DIGITAL_Y);   //吸吐
+            cap->joyControl(joy1, DIGITAL_R1, DIGITAL_R2);        //盘子夹
+            //demo for nancy
+        }
+        else
+            sysData->stopAllObj();
         pros::Task::delay_until(&nowTime, 10);
     }
 }

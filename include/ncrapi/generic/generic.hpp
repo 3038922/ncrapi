@@ -19,12 +19,18 @@ class Generic : public Obj
   public:
     Generic(const std::string &name, const json &pragma);
     /**
+     * @brief 获取当前部件悬停值
+     * 
+     * @return int 悬停值
+     */
+    virtual int getHoldingVal();
+    /**
      * 初始化函数
      * @param lab 进度条 
      * @param str 文字
      * @param pwm 占空比
      */
-    void init(lv_obj_t *lab, const char *str, const int pwm);
+    virtual void init(lv_obj_t *lab, const char *str, const int pwm);
 
     /**
      * 普通的占空比控制  开环
@@ -77,7 +83,7 @@ class Generic : public Obj
      *设置模式   
      * @param flag 1:系统正转模式 0:马达悬停 -1:系统反转模式
      */
-    virtual void setMode(const int flag);
+    virtual void setMode(const int flag) override;
     /**
      * 获取当前模式状态      
      * @return 1是系统正转状态 0悬停状态 -1 是系统反转状态
@@ -100,6 +106,12 @@ class Generic : public Obj
      * 
      */
     virtual int getOpenLoopVal();
+    /**
+     * @brief 设置编码器移动的位置 
+     * 
+     * @param target 编码器移动的位置
+     */
+    virtual void setTarget(const int target);
     /**
      * 获取编码器值
      * @return 弹射编码器的值
@@ -163,6 +175,7 @@ class Generic : public Obj
     virtual void showDetailedInfo() override;
 
   protected:
+    std::shared_ptr<pros::Controller> _thisJoy = nullptr;
     std::vector<Motor> _motorList;
     const std::string _name;
     int _holdVal;
@@ -174,10 +187,10 @@ class Generic : public Obj
     int _mode = 0;    //1 系统正传 0悬停 -1 系统反转 2使用原厂PID控制
     size_t _gearing;  //齿轮最大速度
     size_t _nums = 0; //马达总数
-    Timer _timer;     //系统计时器
     bool _isInit = false;
     double _encNow = 0;
     double _encLast = 0;
+    int _target = 0;
 
   private:
     Timer _timerTemp; //温度控制计时器
