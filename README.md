@@ -1,3 +1,4 @@
+<a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg"></a>
 # 新世纪机器人社图形界面API
 ## 构建说明
 * 1 本项目大量使用c++17特性 故必须使用  `GNU Tools for Arm Embedded Processors 8-2018-q4-major` 以上的版本编译.早期版本必然无法通过编译
