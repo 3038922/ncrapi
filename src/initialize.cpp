@@ -30,38 +30,24 @@ void initialize()
 {
 
     //系统日志初始化
-    logger = std::make_unique<ncrapi::Logger>(2);
-    //系统初始化
-    sysData = std::make_unique<ncrapi::SysBase>(userData);
+    logger = std::make_unique<ncrapi::Logger>();
     //显示初始化
     userDisplay = std::make_unique<ncrapi::UserDisplay>();
-    lv_obj_t *lab1 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
-    lv_obj_set_y(lab1, 40);
+    //系统初始化
+    sysData = std::make_unique<ncrapi::SysBase>(userData);
+    userDisplay->init(); //设置当前背景颜色
     //遥控器初始化
-    lv_label_set_text(lab1, "遥控器初始化中...");
     joy1 = std::make_shared<pros::Controller>(CONTROLLER_MASTER); //主遥控器
-    //显示用户信息
-    lv_obj_t *lab2 = lv_label_create(userDisplay->displayObj[OBJ_BTNM_SON], nullptr);
-    std::stringstream oss;
-    oss << userData["系统信息"]["机器人类型"].get<std::string>() << " " << userData["系统信息"]["队伍编号"].get<std::string>() << " "
-        << userData["系统信息"]["用户"].get<std::string>() << "\n版本号:" << NCR_VERSION_STRING;
-    lv_label_set_text(lab2, oss.str().c_str());
-
-    //demo for nancy
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n底盘初始化中...");
+    //底盘初始化
     chassis = std::make_shared<ncrapi::Chassis>(sysData->jsonVal["底盘"]);
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n升降初始化中...");
+
     lift = std::make_shared<ncrapi::Generic>("升降", sysData->jsonVal["升降"]);
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n弹射初始化中...");
     catapule = std::make_shared<ncrapi::Generic>("弹射", sysData->jsonVal["弹射"]);
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n吸吐初始化中...");
     ballintake = std::make_shared<ncrapi::Generic>("吸吐", sysData->jsonVal["吸吐"]);
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n盘子夹初始化中...");
     cap = std::make_shared<ncrapi::Generic>("夹子", sysData->jsonVal["夹子"]);
-    lv_label_ins_text(lab1, LV_LABEL_POS_LAST, "\n机器人初始化完毕...");
     logger->info({"机器人初始化完毕"});
-    lv_obj_del(userDisplay->displayObj[OBJ_BTNM_SON]);
-    userDisplay->displayObj[OBJ_BTNM_SON] = nullptr;
+    userDisplay->terminal->style_p->body.main_color = LV_COLOR_BLACK; //控制台还原为黑色
+    lv_obj_del(userDisplay->logoObj);
 }
 /**
 *在初始化initialize()之后运行，并且在连接到场控之前自动运行
@@ -81,5 +67,5 @@ void disabled()
 {
     userDisplay->delTasks();
     userDisplay->delObjs();
-    userDisplay->createUserObj(OBJ_DISABLED, true, "obj_disabled", nullptr, "场控关闭状态");
+    userDisplay->createUserObj(OBJ_DISABLED, "obj_disabled", nullptr, "场控关闭状态");
 }

@@ -9,7 +9,7 @@ namespace ncrapi
 {
 void UserDisplay::createOdom(lv_obj_t *parent)
 {
-    createUserObj(OBJ_BTNM_SON, false, "里程计页面", parent);
+    createUserObj(OBJ_BTNM_SON, "里程计页面", parent);
     displayObj[OBJ_BTNM_SON]->style_p->body.main_color = LV_COLOR_BLACK;
     sysData->isOPcontrol = false; //关闭遥控
     //创建图像

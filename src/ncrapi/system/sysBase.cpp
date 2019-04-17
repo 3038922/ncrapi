@@ -2,8 +2,7 @@
 #include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/system/logger.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 SysBase::SysBase(const json &pragam)
 {
     if (!readSDcard(pragam))
@@ -13,8 +12,6 @@ SysBase::SysBase(const json &pragam)
         if (!saveData())
             logger->error({"config.json无法保存, 请检查SD卡"});
     }
-    //系统信息录入
-    robotInfo = jsonVal["系统信息"]["机器人类型"].get<std::string>() + " " + jsonVal["系统信息"]["队伍编号"].get<std::string>() + " " + jsonVal["系统信息"]["用户"].get<std::string>();
     for (size_t i = 1; i <= 21; i++)
         _i2cPort.push_back(i); //1-21I2C端口号
     for (size_t i = 1; i <= 8; i++)
@@ -75,29 +72,15 @@ void SysBase::upDateJson(json &source, const json &target)
             {
                 //第一遍：遍历机器人文件的的元素
                 for (auto it = source.begin(); it != source.end(); ++it)
-                {
                     if (target.find(it.key()) != target.end())
-                    {
-                        //递归调用以比较对象的对象值
-                        upDateJson(it.value(), target[it.key()]);
-                    }
+                        upDateJson(it.value(), target[it.key()]); //递归调用以比较对象的对象值
                     else
-                    {
-                        //找到一个不在o中的键 ->删除它
-                        source.erase(it);
-                        logger->debug({"删除: ", it.key()});
-                    }
-                }
+                        source.erase(it); //找到一个不在o中的键 ->删除它
                 //第二遍：遍历用户数据里的元素
                 for (auto it = target.begin(); it != target.end(); ++it)
-                {
                     if (source.find(it.key()) == source.end()) //如果机器人文件没找到和目标文件里同名的元素
-                    {
-                        //添加他
-                        source[it.key()] = it.value();
-                        logger->debug({"添加: ", it.key()});
-                    }
-                }
+                        source[it.key()] = it.value();         //ADD
+
                 break;
             }
             default:

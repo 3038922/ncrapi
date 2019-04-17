@@ -20,7 +20,7 @@ void autonomous()
     {
         userDisplay->delTasks();
         userDisplay->delObjs();
-        userDisplay->createUserObj(OBJ_AUTONOMOUS, true, "自动赛", nullptr, "自动赛进行中");
+        userDisplay->createUserObj(OBJ_AUTONOMOUS, "自动赛", nullptr, "自动赛进行中");
     }
     logger->debug({"自动赛开始:", std::to_string(autonomousTimer.getDtFromMark())});
 

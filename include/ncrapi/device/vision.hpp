@@ -2,8 +2,7 @@
 #include "ncrapi/system/json.hpp"
 #include "pros/vision.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 class Vision : public pros::Vision
 {
   public:

@@ -30,7 +30,7 @@ class Generic : public Obj
      * @param str 文字
      * @param pwm 占空比
      */
-    virtual void init(lv_obj_t *lab, const char *str, const int pwm);
+    virtual void init(const int pwm);
 
     /**
      * 普通的占空比控制  开环
@@ -42,6 +42,10 @@ class Generic : public Obj
      * @param vol +-120
      */
     virtual void moveVoltage(const double vol);
+    /**
+     * @brief 部件马达停止运转
+     * 
+     */
     virtual void stop() override;
     /**
     *设置要移动到的电机的目标绝对位置。
@@ -77,6 +81,16 @@ class Generic : public Obj
     *失败，设置错误。
      */
     virtual void moveVelocity(const std::int32_t velocity);
+    /**
+     * @brief 获取当前部件状态
+     * 
+     * @return int 各个部件定义的_state不同
+     */
+    virtual int getState();
+    /**
+     * @brief 悬停逻辑状态都写这里
+     * 
+     */
     virtual void holding();
 
     /**
@@ -191,6 +205,7 @@ class Generic : public Obj
     double _encNow = 0;
     double _encLast = 0;
     int _target = 0;
+    bool _isSafeMode = 0;
 
   private:
     Timer _timerTemp; //温度控制计时器

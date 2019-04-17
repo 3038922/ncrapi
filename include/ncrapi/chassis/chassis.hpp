@@ -6,8 +6,7 @@
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 constexpr int realSpeed[128] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
     24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
@@ -129,7 +128,13 @@ class Chassis : public Obj
      * @return double 返回左边或者右边编码器值
      */
     virtual double getSpeed(const bool side);
-
+    /**
+     * @brief 获取机器人当前速度 单位mm/s
+     * 
+     * @param side 0左边 1右边
+     * @return double  返回机器人底盘速度
+     */
+    virtual double getRobotSpeed(const bool side);
     /**
  * 获取左边或者右边的温度
  * @param side 左边0 右边1
@@ -142,7 +147,29 @@ class Chassis : public Obj
  * @return int32_t 返回左边或者右边的电压
  */
     virtual const int32_t getVoltage(const bool side) const;
+    /**
+ * 获取左边或者右边的电流
+ * @param side 左边0 右边1
+ * @return int32_t 返回左边或者右边的电流
+ */
     virtual const int32_t getCurrent(const bool side) const;
+    /**
+ * 获取左边或者右边的扭矩
+ * @param side 左边0 右边1
+ * @return int32_t 返回左边或者右边的扭矩
+ */
+    virtual const double getTorque(const bool side) const;
+
+    /**
+     * 设置马达制动模式 使用会导致马达端口烧掉
+     * @param mode 马达制动的模式 
+     */
+    virtual void setBrakeMode(pros::motor_brake_mode_e_t mode);
+    /**
+     * @brief 打印内置PID数据到控制台
+     * 
+     */
+    virtual void getVelPid();
 
     /**
      * 显示传感器数据到屏幕 ostringstream ostr流
@@ -167,5 +194,8 @@ class Chassis : public Obj
     Timer _timerTemp;     //系统计时器
     size_t _gearing;      //齿轮最大速度
     int _mode = 0;        //模式0 使用用户自定义开环 模式1 使用V5内置速度环
+    volatile double _encNow[2] = {0};
+    volatile double _nowRobotSpeed[2] = {0}, _maxRobotSpeed[2] = {0}; //记录机器人最大速度用的 单位mm/s
+    volatile double _nowAccelSpeed[2] = {0}, _maxAccelSpeed[2] = {0}; //最大加速度 单位mm/s2
 };
 } // namespace ncrapi

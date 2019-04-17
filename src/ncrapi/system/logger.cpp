@@ -1,10 +1,11 @@
 #include "ncrapi/system/logger.hpp"
+#include "ncrapi/userDisplay/userDisplay.hpp"
+#include "pros/misc.hpp"
 #include "pros/rtos.hpp"
 #include <cstdlib>
 #include <iostream>
+namespace ncrapi {
 
-namespace ncrapi
-{
 #define RESET "\033[0m"
 #define BLACK "\033[30m"              /* Black */
 #define RED "\033[31m"                /* Red */
@@ -22,88 +23,64 @@ namespace ncrapi
 #define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
-Logger::Logger(const size_t Level) : _lever(Level)
+Logger::Logger()
 {
-    for (size_t i = 0; i <= Level; i++)
+    if (pros::competition::get_status() == COMPETITION_CONNECTED)
     {
-        _data[i] = fopen(_level[i].c_str(), "a");
-        if (_data[i] == nullptr)
-            std::cerr << _level[i] << " 创建失败,请检查SD卡!" << std::endl;
-        else
-            std::cout << _level[i] << " 创建成功" << std::endl;
+        isComp = true;
+        std::cout << "日志类构造成功,场控已连接" << std::endl;
     }
+    else
+        std::cout << "日志类构造成功,场控未连接" << std::endl;
 }
 void Logger::error(std::initializer_list<std::string> val)
 {
     output(val);
-    if (_data[ERROR] != nullptr)
-        fprintf(_data[ERROR], "#FF0000 %s#\n", _str.c_str());
-    std::cout << RED << _str << std::endl;
+    _errorCount++;
+    if (userDisplay != nullptr)
+    {
+        terminalStr[ERROR] += "#FF0000 " + _str + "#\n";
+        auto temp2 = "#FF0000 " + std::to_string(_errorCount) + "#";
+        lv_label_set_text(userDisplay->errorLabs, temp2.c_str());
+    }
+    if (!isComp)
+        std::cout << RED << _str << std::endl;
 }
 void Logger::warnning(std::initializer_list<std::string> val)
 {
     output(val);
-    if (_data[WARNNING] != nullptr)
-        fprintf(_data[WARNNING], "#CCFF00 %s#\n", _str.c_str());
-    std::cout << YELLOW << _str << std::endl;
+    _warnningCount++;
+    if (userDisplay != nullptr)
+    {
+        terminalStr[WARNNING] += "#CCFF00 " + _str + "#\n";
+        auto temp2 = "#CCFF00 " + std::to_string(_warnningCount) + "#";
+        lv_label_set_text(userDisplay->warnningLabs, temp2.c_str());
+    }
+    if (!isComp)
+        std::cout << YELLOW << _str << std::endl;
 }
 void Logger::debug(std::initializer_list<std::string> val)
 {
-    output(val);
-    if (_data[DEBUG] != nullptr)
-        fprintf(_data[DEBUG], "#3366FF %s#\n", _str.c_str());
-    std::cout << BLUE << _str << std::endl;
+    if (!isComp)
+    {
+        output(val);
+        std::cout << BLUE << _str << std::endl;
+    }
 }
 void Logger::info(std::initializer_list<std::string> val)
 {
-    output(val);
-    if (_data[INFO] != nullptr)
-        fprintf(_data[INFO], "#FFFFFF %s#\n", _str.c_str());
-    std::cout << RESET << _str << std::endl;
-}
-bool Logger::showData(LEVEL level, std::string &str)
-{
-    if (_data[level] != nullptr)
+    if (!isComp)
     {
-        fclose(_data[level]);
-        _data[level] = fopen(_level[level].c_str(), "r"); //先关闭写模式再以读模式打开
-        char buf[1024];
-        while (fgets(buf, 1024, _data[level]) != nullptr)
-            str += buf;
-        fclose(_data[level]);                             //先关闭读模式
-        _data[level] = fopen(_level[level].c_str(), "a"); //再继续以写模式打开
-        return true;
+        output(val);
+        std::cout << RESET << _str << std::endl;
     }
-    std::cerr << _level[level] << " 文件打开错误,请检查SD卡!" << std::endl;
-    return false;
 }
-bool Logger::close(LEVEL level)
+void Logger::clearCount()
 {
-    if (_data[level] != nullptr)
-    {
-        fclose(_data[level]);
-        _data[level] = nullptr;
-        return true;
-    }
-    std::cerr << _level[level] << " 文件打开错误,请检查SD卡!" << std::endl;
-    return false;
-}
-bool Logger::clean(LEVEL level)
-{
-    if (_data[level] != nullptr)
-    {
-        fclose(_data[level]);                             //先关闭
-        _data[level] = fopen(_level[level].c_str(), "w"); //清空 先关闭写模式再以写模式打开
-        fclose(_data[level]);                             //再关闭
-        _data[level] = fopen(_level[level].c_str(), "a"); //再继续以写模式打开
-        return true;
-    }
-    std::cerr << _level[level] << " 文件打开错误,请检查SD卡!" << std::endl;
-    return false;
-}
-size_t Logger::getLevel()
-{
-    return _lever;
+    _errorCount = 0;
+    _warnningCount = 0;
+    lv_label_set_text(userDisplay->errorLabs, "#FF0000 0#");
+    lv_label_set_text(userDisplay->warnningLabs, "#CCFF00 0#");
 }
 void Logger::output(std::initializer_list<std::string> &val)
 {

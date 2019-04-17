@@ -2,8 +2,7 @@
 #include "ncrapi/system/json.hpp"
 #include "pros/adi.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 class ADIAnalogIn : public pros::ADIAnalogIn
 {
   public:

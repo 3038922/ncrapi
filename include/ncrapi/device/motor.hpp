@@ -2,8 +2,7 @@
 #include "ncrapi/system/json.hpp"
 #include "pros/motors.hpp"
 
-namespace ncrapi
-{
+namespace ncrapi {
 class Motor : public pros::Motor
 {
   public:

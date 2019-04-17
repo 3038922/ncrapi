@@ -8,8 +8,7 @@
 #define PROS_USE_SIMPLE_NAMES
 
 #define PROS_USE_LITERALS
-namespace ncrapi
-{
+namespace ncrapi {
 class Obj
 {
   public:

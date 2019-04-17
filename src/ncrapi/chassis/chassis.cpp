@@ -12,7 +12,6 @@ Chassis::Chassis(const json &pragma) : _name("底盘")
 {
     for (auto &[key, value] : pragma["马达"].items())
         _motorList.push_back({key, value});
-
     _joyThreshold = clamp<int>(pragma["参数"]["遥控器矫正"].get<int>(), 0, 20, "遥控器矫正");
     _maxRotateSpd = clamp<int>(pragma["参数"]["最大旋转速度"].get<int>(), 60, 127, "最大旋转速度");
     pros::delay(100);
@@ -167,7 +166,9 @@ void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_ana
     if (abs(y) < _joyThreshold)
         y = 0;
     y = clamp(y, -_maxRotateSpd, _maxRotateSpd);
-    driveVector(x, y, speedMode);
+    int left = clamp(x - y, -_spdRange, _spdRange);
+    int right = clamp(x + y, -_spdRange, _spdRange);
+    set(speedMode[abs(left)] * copySign(left), speedMode[abs(right)] * copySign(right));
 }
 void Chassis::tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)
 {
@@ -208,11 +209,7 @@ double Chassis::getEnc(const bool side)
         i = _sideNums;
     return _motorList[i].get_position();
 }
-/**
-     * 获取电机当前速度  
-     * @param side  0左边 1右边
-     * @return double 返回左边或者右边编码器值
-     */
+
 double Chassis::getSpeed(const bool side)
 {
     size_t i = 0;
@@ -220,19 +217,27 @@ double Chassis::getSpeed(const bool side)
         i = _sideNums;
     return _motorList[i].get_actual_velocity();
 }
+
+double Chassis::getRobotSpeed(const bool side)
+{
+    return _nowRobotSpeed[side];
+}
 void Chassis::setMode(const int mode)
 {
     _mode = mode;
+    clamp(mode, 0, 1, {"底盘控制模式"});
     if (_mode == 0)
     {
         _spdRange = 127;
         _maxRotateSpd = sysData->jsonVal["底盘"]["参数"]["最大旋转速度"].get<int>();
+        setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
         logger->debug({"底盘切换为开环控制"});
     }
     else
     {
         _spdRange = _gearing;
         _maxRotateSpd = sysData->jsonVal["底盘"]["参数"]["最大旋转速度"].get<int>() * _gearing / 127;
+        setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
         logger->debug({"底盘切换为V5速度环控制"});
     }
 }
@@ -274,10 +279,53 @@ const int32_t Chassis::getCurrent(const bool side) const
         flag = _sideNums;
     double sum = 0;
     for (size_t i = 0; i < _sideNums; i++)
-        sum += _motorList[i + flag].get_voltage();
+        sum += _motorList[i + flag].get_current_draw();
     return sum / static_cast<int32_t>(_sideNums); //注意这里有坑
 }
-
+const double Chassis::getTorque(const bool side) const
+{
+    size_t flag = 0;
+    if (side == 1)
+        flag = _sideNums;
+    double sum = 0;
+    for (size_t i = 0; i < _sideNums; i++)
+        sum += _motorList[i + flag].get_torque();
+    return sum / static_cast<double>(_sideNums); //注意这里有坑
+}
+void Chassis::getVelPid()
+{
+    for (auto &it : _motorList)
+    {
+        logger->debug({
+            "kf:",
+            std::to_string(it.get_vel_pid().kf),
+            " kp:",
+            std::to_string(it.get_vel_pid().kp),
+            " ki:",
+            std::to_string(it.get_vel_pid().ki),
+            " kd:",
+            std::to_string(it.get_vel_pid().kd),
+            "\nfilter:",
+            std::to_string(it.get_vel_pid().filter),
+            " limit:",
+            std::to_string(it.get_vel_pid().limit),
+            " threshold:",
+            std::to_string(it.get_vel_pid().threshold),
+            " loopspeed:",
+            std::to_string(it.get_vel_pid().loopspeed),
+        });
+    }
+}
+/**
+     * 设置马达制动模式 使用会导致马达端口烧掉
+     * @param mode 马达制动的模式 
+     */
+void Chassis::setBrakeMode(pros::motor_brake_mode_e_t mode)
+{
+    logger->info({"设置:", _name, " 马达制动模式", std::to_string(mode)});
+    for (auto &it : _motorList)
+        it.set_brake_mode(mode);
+}
 /**
      * 显示传感器数据到屏幕 ostringstream ostr流
      */
@@ -292,11 +340,11 @@ const std::string Chassis::showName() const
 }
 void Chassis::showDetailedInfo()
 {
-    userDisplay->ostr << "左底盘pwm:" << _pwm[0] << "\n"
-                      << "编码器:" << getEnc(0) << "速度:" << getSpeed(0) << "\n"
+    userDisplay->ostr << "左底盘pwm:" << _pwm[0] << "编码器:" << getEnc(0) << "\n"
+                      << "左机器人速度" << getRobotSpeed(0) << "mm/s 最大速度" << _maxRobotSpeed[0] << "mm/s 最大加速度:" << _maxAccelSpeed[0] << "mm/s2\n"
                       << "温度:" << getTemperature(0) << "电压:" << getVoltage(0) << "电流:" << getCurrent(0) << "\n"
-                      << "右底盘pwm:" << _pwm[1] << "\n"
-                      << "编码器 : " << getEnc(1) << "速度:" << getSpeed(1) << "\n"
+                      << "右底盘pwm:" << _pwm[1] << "编码器 : " << getEnc(1) << "\n"
+                      << "右机器人速度" << getRobotSpeed(1) << "mm/s 最大速度" << _maxRobotSpeed[1] << "mm/s 最大加速度:" << _maxAccelSpeed[1] << "mm/s2\n"
                       << "温度 : " << getTemperature(1) << "电压 : " << getVoltage(1) << "电流 : " << getCurrent(1) << std::endl;
 }
 

@@ -11,7 +11,6 @@ class SysBase
 
   public:
     //全局数据
-    std::string robotInfo;
     json jsonVal; //根数据
 
     SysBase(const json &pragam);
@@ -83,5 +82,4 @@ class SysBase
     void recursionPrint(const json &pragma, std::string_view ignore);
 };
 } // namespace ncrapi
-
 extern std::unique_ptr<ncrapi::SysBase> sysData;

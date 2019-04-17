@@ -32,14 +32,22 @@ int Generic::getHoldingVal()
     return _holdVal;
 }
 /**
+     * @获取当前设备状态
+     * @return 虚函数
+     */
+int Generic::getState()
+{
+    return _state;
+}
+/**
      * 初始化函数
      * @param lab 进度条 
      * @param str 文字
      * @param pwm 占空比
      */
-void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
+void Generic::init(const int pwm)
 {
-    lv_label_ins_text(lab, LV_LABEL_POS_LAST, str);
+    logger->info({_name, " 校准中"});
     size_t count = 0;
     while (count < 5 || isSafeMode())
     {
@@ -53,6 +61,7 @@ void Generic::init(lv_obj_t *lab, const char *str, const int pwm)
     Generic::set(0);
     resetEnc();
     _isInit = true;
+    logger->info({_name, " 校准完毕"});
 }
 
 /**
@@ -63,7 +72,28 @@ void Generic::set(const int pwm)
 {
     _encLast = _encNow; //在外面调取的话 要把这个写前面
     _openLoopVal = clamp(pwm, -127, 127);
-    if (isSafeMode())
+    if (fabs(getSpeed()) <= _gearing / 10 && abs(_openLoopVal) > _holdVal * 2)
+    {
+        _safeModeFlags++;
+        if (_safeModeFlags > 10)
+        {
+
+            if (_safeModeFlags > 200)
+            {
+                logger->warnning({_name, ":进入热保模式!请注意操作"});
+                _safeModeFlags = 0;
+            }
+            _isSafeMode = true;
+        }
+        else
+            _isSafeMode = false;
+    }
+    else
+    {
+        _safeModeFlags = 0;
+        _isSafeMode = false;
+    }
+    if (_isSafeMode)
         _openLoopVal = _holdVal * _holdingFlag;
     for (auto &it : _motorList)
         it.move(_openLoopVal);
@@ -319,22 +349,7 @@ double Generic::getTemperature()
      */
 bool Generic::isSafeMode()
 {
-    if (fabs(getSpeed()) <= _gearing / 10 && abs(_openLoopVal) > _holdVal * 2)
-    {
-        _safeModeFlags++;
-        if (_safeModeFlags > 10)
-        {
-            logger->warnning({_name, ":进入热保模式!请注意操作"});
-            return true;
-        }
-        else
-            return false;
-    }
-    else
-    {
-        _safeModeFlags = 0;
-        return false;
-    }
+    return _isSafeMode;
 }
 /**
      * 重置所有相关传感器
