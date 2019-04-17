@@ -1,23 +1,23 @@
 #pragma once
+#include "ncrapi/util/timer.hpp"
 #include <iomanip>
 #include <memory>
 #include <string>
 #include <vector>
-namespace ncrapi
-{
+
+namespace ncrapi {
 
 class Logger
 {
   public:
-    typedef enum LEVEL
-    {
+    typedef enum LEVEL {
         ERROR = 0,
         WARNNING,
         DEBUG,
         INFO
 
     } LEVEL;
-    Logger(const size_t Level = 0);
+    Logger();
     /**
      * @brief 打印红色错误信息到控制台和机器人内置控制台
      * 
@@ -42,17 +42,18 @@ class Logger
      * @param val 具体格式是logger->error({"要打印的东西",std::to_string(变量名)});
      */
     void info(std::initializer_list<std::string> val);
-    bool showData(LEVEL level, std::string &str);
-    bool close(LEVEL level);
-    bool clean(LEVEL level);
-    size_t getLevel();
+    /**
+     * @brief 清理error和warnning的计数器
+     * 
+     */
+    void clearCount();
+    std::string terminalStr[2];
 
   private:
-    size_t _lever = 0;
+    bool isComp = false;
     void output(std::initializer_list<std::string> &val);
     std::string _str;
-    std::array<FILE *, 4> _data = {nullptr, nullptr, nullptr, nullptr};
-    std::vector<std::string> _level = {"/usd/error.log", "/usd/warnning.log", "/usd/debug.log", "/usd/info.log"};
+    size_t _errorCount = 0, _warnningCount = 0;
 };
 } // namespace ncrapi
 extern std::unique_ptr<ncrapi::Logger> logger;

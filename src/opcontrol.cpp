@@ -10,13 +10,14 @@
 
 void opcontrol()
 {
-    userDisplay->createOpObj(sysData->robotInfo);
-    ncrapi::Timer loopTime;
-    uint32_t nowTime = loopTime.getNowTime();
+    userDisplay->createOpObj();
+    uint32_t lastTime = pros::millis();
+    uint32_t nowTime = pros::millis();
 
     while (true)
     {
-        userDisplay->loopTime = loopTime.getDt();
+        userDisplay->loopTime = pros::millis() - lastTime;
+        lastTime = pros::millis();
         if (userDisplay->loopTime > userDisplay->maxLoopTime)
             userDisplay->maxLoopTime = userDisplay->loopTime;
         if (userDisplay->loopTime < userDisplay->minLoopTime)
