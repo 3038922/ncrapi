@@ -49,7 +49,6 @@ SOFTWARE.
 #include <utility>          // declval, forward, move, pair, swap
 #include <vector>           // vector
 
-
 // #include <nlohmann/adl_serializer.hpp>
 
 #include <utility>
@@ -20642,6 +20641,59 @@ class basic_json
             }
         }
 
+        return result;
+    }
+    /**
+     * @brief 用户自定义jsonDiff 删除了值替换
+     * @param source SD卡上的数据
+     * @param target 目标数据
+     * @param path 递归用的
+     * @return JSON_NODISCARD userdiff 返回递归补丁
+     */
+    JSON_NODISCARD
+    static basic_json userdiff(const basic_json &source, const basic_json &target, const std::string &path = "")
+    {
+        // the patch
+        basic_json result(value_t::array);
+        //如果值相同，则返回空补丁
+        if (source == target)
+            return result;
+        switch (source.type())
+        {
+            case value_t::object:
+            {
+                //第一遍：遍历此对象的元素
+                for (auto it = source.cbegin(); it != source.cend(); ++it)
+                {
+                    //转义要在JSON补丁中使用的密钥名称
+                    const auto key = json_pointer::escape(it.key());
+                    if (target.find(it.key()) != target.end())
+                    {
+                        //递归调用以比较对象的对象值
+                        auto temp_diff = userdiff(it.value(), target[it.key()], path + "/" + key);
+                        result.insert(result.end(), temp_diff.begin(), temp_diff.end());
+                    }
+                    else
+                    {
+                        //找到一个不在o中的键 ->删除它
+                        result.push_back(object({{"op", "remove"}, {"path", path + "/" + key}}));
+                    }
+                }
+                //第二遍：遍历其他对象的元素
+                for (auto it = target.cbegin(); it != target.cend(); ++it)
+                {
+                    if (source.find(it.key()) == source.end())
+                    {
+                        //找到了一个不在此的键 ->添加它
+                        const auto key = json_pointer::escape(it.key());
+                        result.push_back({{"op", "add"}, {"path", path + "/" + key}, {"value", it.value()}});
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
         return result;
     }
 
