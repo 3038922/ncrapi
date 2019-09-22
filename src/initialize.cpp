@@ -15,11 +15,10 @@ std::unique_ptr<ncrapi::UserDisplay> userDisplay = nullptr; //图像数据类
 //部件类初始化
 //demo for nancy
 std::shared_ptr<pros::Controller> joy1 = nullptr;
+std::unique_ptr<pros::Task> loggerTask = nullptr;
 std::shared_ptr<ncrapi::Chassis> chassis = nullptr;
 std::shared_ptr<ncrapi::Generic> lift = nullptr;
-std::shared_ptr<ncrapi::Generic> catapule = nullptr;   //弹射
-std::shared_ptr<ncrapi::Generic> ballintake = nullptr; //吸吐
-std::shared_ptr<ncrapi::Generic> cap = nullptr;        //夹子
+std::shared_ptr<ncrapi::Generic> cap = nullptr; //夹子
 
 /**
  * 初始化函数
@@ -40,13 +39,11 @@ void initialize()
     joy1 = std::make_shared<pros::Controller>(CONTROLLER_MASTER); //主遥控器
     //底盘初始化
     chassis = std::make_shared<ncrapi::Chassis>(sysData->jsonVal["底盘"]);
-
     lift = std::make_shared<ncrapi::Generic>("升降", sysData->jsonVal["升降"]);
-    catapule = std::make_shared<ncrapi::Generic>("弹射", sysData->jsonVal["弹射"]);
-    ballintake = std::make_shared<ncrapi::Generic>("吸吐", sysData->jsonVal["吸吐"]);
     cap = std::make_shared<ncrapi::Generic>("夹子", sysData->jsonVal["夹子"]);
     logger->info({"机器人初始化完毕"});
-    userDisplay->terminal->style_p->body.main_color = LV_COLOR_BLACK; //控制台还原为黑色
+    loggerTask = std::make_unique<pros::Task>((pros::task_fn_t)taskLogger, nullptr, TASK_PRIORITY_DEFAULT - 3, TASK_STACK_DEPTH_DEFAULT, "task_logger"); //DEBUG线程开始
+    userDisplay->terminal->style_p->body.main_color = LV_COLOR_BLACK;                                                                                    //控制台还原为黑色
     lv_obj_del(userDisplay->logoObj);
 }
 /**

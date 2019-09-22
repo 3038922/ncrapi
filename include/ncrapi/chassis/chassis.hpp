@@ -6,7 +6,8 @@
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
-namespace ncrapi {
+namespace ncrapi
+{
 constexpr int realSpeed[128] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
     24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
@@ -24,12 +25,19 @@ class Chassis : public Obj
   public:
     Chassis(const json &pragma);
     /**
-     * @brief 开环红纸底盘左右轮速度
-     * 
+     * @brief 开环控制底盘左右轮速度
      * @param left 左轮速度+-127 +前进 -后退
      * @param right  右轮速度+-127 +前进 -后退
      */
     void set(const int left, const int right);
+    /**
+     * @brief 开环控制麦轮底盘左右轮速度
+     * @param LF  左前速度+-127 +前进 -后退
+     * @param LR  左后速度+-127 +前进 -后退
+     * @param RF  右前速度+-127 +前进 -后退
+     * @param RR  右后速度+-127 +前进 -后退
+     */
+    void set(const int LF, const int lB, const int RF, const int RB);
     /**
     设定电机的速度。
     *
@@ -85,6 +93,11 @@ class Chassis : public Obj
      * @param velocity 速度 红尺寸+100 绿齿轮最大速度+200 蓝齿轮+600 
      */
     void rotateReative(const double pos, const std::int32_t velocity);
+    /**
+     * 平移  只限麦轮
+     * @param pwm 左平移+ 右平移- 范围:+-127
+     */
+    void translation(const int pwm, const int speedMode[128] = realSpeed);
 
     /**
      * 底盘马达停转
@@ -101,10 +114,25 @@ class Chassis : public Obj
     /**
      * 遥控模块 单摇杆双摇杆都用这个
      * @param verticalVal     前后通道
-     * @param horizontalVal    左右通道
+     * @param horizontalVal   左右通道
      * @param threshold 遥控器矫正阀值
      */
     virtual void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int speedMode[128] = realSpeed);
+
+    /**
+     * 遥控模块 麦轮遥控
+     * @param verticalVal     前后通道
+     * @param horizontalVal   左右通道
+     * @param translationVal  平移通道
+     * @param threshold       遥控器矫正阀值
+     */
+    virtual void mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal, const int speedMode[128] = realSpeed);
+    /**
+     * 遥控模块 坦克遥控
+     * @param left      左通道
+     * @param right     右通道
+     * @param threshold 遥控器矫正阀值
+     */
     void tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
 
     /**
@@ -183,6 +211,9 @@ class Chassis : public Obj
      * @param mode 模式0 使用用户自定义开环 模式1 使用V5内置速度环
      */
     virtual void setMode(const int mode) override;
+    virtual const std::vector<Motor> getMotorInfo() const override;
+
+    virtual bool isSafeMode() override;
 
   protected:
     const std::string _name;
@@ -191,11 +222,11 @@ class Chassis : public Obj
     int _spdRange = 127;
     size_t _sideNums = 0; //半边马达数量
     int _pwm[2];          //0 左边pwm 1 右边pwm
-    Timer _timerTemp;     //系统计时器
     size_t _gearing;      //齿轮最大速度
     int _mode = 0;        //模式0 使用用户自定义开环 模式1 使用V5内置速度环
     volatile double _encNow[2] = {0};
     volatile double _nowRobotSpeed[2] = {0}, _maxRobotSpeed[2] = {0}; //记录机器人最大速度用的 单位mm/s
     volatile double _nowAccelSpeed[2] = {0}, _maxAccelSpeed[2] = {0}; //最大加速度 单位mm/s2
+    bool _isSafeMode = false;
 };
 } // namespace ncrapi

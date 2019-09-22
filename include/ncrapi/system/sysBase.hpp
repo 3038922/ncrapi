@@ -4,8 +4,7 @@
 #include "object.hpp"
 #include <memory>
 
-namespace ncrapi
-{
+namespace ncrapi {
 class SysBase
 {
 
@@ -69,13 +68,6 @@ class SysBase
  * 从SD中读取文件 存入数据容器
  */
     bool readSDcard(json pragam);
-    /**
-     * @brief 递归新增替换升级内置JSON
-     * 
-     * @param source 要升级的文件
-     * @param target 升级补丁
-     */
-    void upDateJson(json &source, const json &target);
 
     void print(const json &pragma, std::string_view ignore = nullptr);
     //递归打印

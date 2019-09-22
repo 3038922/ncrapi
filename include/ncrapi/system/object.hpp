@@ -1,4 +1,5 @@
 #pragma once
+#include "ncrapi/device/motor.hpp"
 #include <string>
 
 // #pragma GCC diagnostic push
@@ -8,7 +9,8 @@
 #define PROS_USE_SIMPLE_NAMES
 
 #define PROS_USE_LITERALS
-namespace ncrapi {
+namespace ncrapi
+{
 class Obj
 {
   public:
@@ -18,5 +20,7 @@ class Obj
     virtual void resetAllSensors() = 0;
     virtual void stop() = 0;
     virtual void setMode(int flag) = 0;
+    virtual bool isSafeMode() = 0;
+    virtual const std::vector<Motor> getMotorInfo() const = 0;
 };
 } // namespace ncrapi

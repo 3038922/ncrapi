@@ -6,4 +6,4 @@
 #include "ncrapi/system/sysBase.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
 
-#define NCR_VERSION_STRING "9.1.1"
+#define NCR_VERSION_STRING "9.2.7"

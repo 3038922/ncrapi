@@ -13,7 +13,8 @@ extern lv_font_t ncrfont10;
 // extern lv_img_t field;
 LV_IMG_DECLARE(field); //声明一个场地图像变量
 LV_IMG_DECLARE(logo);  //声明一个logo图像变量
-typedef enum obj_flag {
+typedef enum obj_flag
+{
     OBJ_BTNM_SON, //起始页面下的选项
     BTNM_START,   //按钮阵列 为了防止重复删除 这个也要放前面
 
@@ -23,11 +24,13 @@ typedef enum obj_flag {
     OBJ_OPCONTROL,
 } obj_flag;
 
-typedef enum task_flag {
+typedef enum task_flag
+{
     TASK_LOOP, //记录遥控模式下LOOP的TASK
     TASK_OTHER //其他模式下的线程
 } task_flag;
-namespace ncrapi {
+namespace ncrapi
+{
 
 class UserDisplay
 {
@@ -59,10 +62,10 @@ class UserDisplay
     void drawRectangle(lv_obj_t *obj, const int i, const pros::vision_object &data, lv_style_t *style);
     void createUserObj(obj_flag objname, const char *terminalText, lv_obj_t *parent = nullptr, const char *labText = nullptr);
     void createUserTask(task_flag taskName, void (*task)(void *), uint32_t loopTime, const char *terminalText, void *pragma = nullptr);
-    void createCompe(lv_obj_t *parent = nullptr);        //自动赛选择页面
-    static void compTabChose(lv_obj_t *tab, uint16_t x); //用于自动赛选择的静态函数
-    static lv_res_t confirmBtnInOdom(lv_obj_t *btn);     //用于ODOM自动赛选择的静态动作函数
-    static lv_res_t confirmBtnIncomp(lv_obj_t *btn);     //用于自动赛确认页面的静态函数
+    void createCompe(lv_obj_t *parent = nullptr);            //自动赛选择页面
+    static lv_res_t compTabChose(lv_obj_t *tab, uint16_t x); //用于自动赛选择的静态函数
+    static lv_res_t confirmBtnInOdom(lv_obj_t *btn);         //用于ODOM自动赛选择的静态动作函数
+    static lv_res_t confirmBtnIncomp(lv_obj_t *btn);         //用于自动赛确认页面的静态函数
     void createOpObj();
     static void loopTask(void *param);     //获取时间的线程
     void createTerminal(lv_obj_t *parent); //创建控制台

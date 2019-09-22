@@ -2,7 +2,8 @@
 #include "ncrapi/system/json.hpp"
 #include "pros/motors.hpp"
 
-namespace ncrapi {
+namespace ncrapi
+{
 class Motor : public pros::Motor
 {
   public:
@@ -18,7 +19,7 @@ class Motor : public pros::Motor
      *获取马达的端口号     
      * @return std::string 返回马达的名字 
      */
-    int getPort();
+    const int getPort() const;
 
     /**
      * @获取齿轮中文名字

@@ -1,9 +1,7 @@
 #pragma once
 #include "ncrapi/ncrapi.hpp"
-#define ROBOT_CAP          //盘子机
-#define READ_SD_CARD false //是否从SD卡上读取 false 从这里读取参数 true 从SD卡上读取参数
 const json userData = {
-    {"json版本号", 1.1},
+    {"json版本号", 0.1},
     {
         "系统信息",
         {
@@ -45,19 +43,6 @@ const json userData = {
         },
     },
     {
-        "弹射",
-        {
-            {"马达",
-             {
-                 {"弹射", {{"端口", 19}, {"正反", false}, {"齿轮", 1}}},
-             }},
-            {"参数",
-             {
-                 {"悬停值", 15},
-             }},
-        },
-    },
-    {
         "升降",
         {
             {"马达",
@@ -83,26 +68,11 @@ const json userData = {
              }},
         },
     },
-    {
-        "吸吐",
-        {
-            {"马达",
-             {
-                 {"吸吐", {{"端口", 19}, {"正反", false}, {"齿轮", 1}}},
-             }},
-            {"参数",
-             {
-                 {"悬停值", 0},
-             }},
-        },
-    },
 };
 
 extern std::shared_ptr<pros::Controller> joy1;
 extern std::shared_ptr<ncrapi::Chassis> chassis;
 extern std::shared_ptr<ncrapi::Generic> lift;
-extern std::shared_ptr<ncrapi::Generic> catapule;   //弹射
-extern std::shared_ptr<ncrapi::Generic> ballintake; //吸吐
-extern std::shared_ptr<ncrapi::Generic> cap;        //夹子
+extern std::shared_ptr<ncrapi::Generic> cap; //夹子
 
 //demo for nancy

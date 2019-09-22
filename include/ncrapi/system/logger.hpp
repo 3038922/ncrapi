@@ -47,6 +47,11 @@ class Logger
      * 
      */
     void clearCount();
+    /**
+     * @brief DEBUG模块的线程
+     * 
+     */
+    void loop();
     std::string terminalStr[2];
 
   private:
@@ -57,3 +62,7 @@ class Logger
 };
 } // namespace ncrapi
 extern std::unique_ptr<ncrapi::Logger> logger;
+static void taskLogger(void *para)
+{
+    logger->loop();
+}

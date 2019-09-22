@@ -34,15 +34,12 @@ void autonomous()
         // chassis moving distance in inch
         // distance(inch) /4 (inch wheel diameter)/ pi * 360 degree
         chassis->forwardRelative(-12 * 360 / 4 / M_PI, 100);      //后退一个方格 12inch
-        catapule->moveRelative(360, 100);                         //射高旗
         chassis->forwardRelative(12 * 360 / 4 / M_PI, 100);       //前进1个方格
         chassis->rotateReative(-790 * 360 / 900 * autoFlag, 100); //右转90
-        ballintake->moveRelative(365 * 5, 100);                   //吸球器启动
         chassis->forwardRelative(-18 * 360 / 4 / M_PI, 100);      //后退1.5个方格吸球
         chassis->forwardRelative(18 * 360 / 4 / M_PI, 100);       //前进1.5个方格
         chassis->rotateReative(790 * 360 / 900 * autoFlag, 100);  //左转90
         chassis->forwardRelative(12 * 360 / 4 / M_PI, 100);       //前进1个方格
-        catapule->moveRelative(360, 100);                         //射中旗
         chassis->forwardRelative(6 * 360 / 4 / M_PI, 100);        //前进0.5个方格 撞低旗
 
         if (!sysData->jsonVal["自动赛"]["开台&不开台"]) // 开台
@@ -58,11 +55,9 @@ void autonomous()
     }
     else // 后场
     {
-        ballintake->moveRelative(360 * 5, 100);              //吸球器启动
         chassis->forwardRelative(-18 * 360 / 4 / M_PI, 100); //后退1.5个方格吸球
         chassis->forwardRelative(18 * 360 / 4 / M_PI, 100);  //前进1.5个方格
         chassis->rotateReative(720 * autoFlag, 100);         //左转90
-        catapule->moveRelative(360, 100);                    //射高旗
         chassis->rotateReative(720 * autoFlag, 100);         //左转90
         if (!sysData->jsonVal["自动赛"]["开台&不开台"])      // 开台
         {

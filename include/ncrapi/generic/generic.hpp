@@ -170,7 +170,7 @@ class Generic : public Obj
      * 检测部件是否堵转
      * @return 返回false 没有堵转,返回true 堵转了
      */
-    virtual bool isSafeMode();
+    virtual bool isSafeMode() override;
     /**
      * 重置所有相关传感器
      */
@@ -187,6 +187,7 @@ class Generic : public Obj
     virtual void showSensor() override;
     virtual const std::string showName() const override;
     virtual void showDetailedInfo() override;
+    virtual const std::vector<Motor> getMotorInfo() const override;
 
   protected:
     std::shared_ptr<pros::Controller> _thisJoy = nullptr;
@@ -208,6 +209,5 @@ class Generic : public Obj
     bool _isSafeMode = 0;
 
   private:
-    Timer _timerTemp; //温度控制计时器
-};                    // namespace ncrapi
+}; // namespace ncrapi
 } // namespace ncrapi
