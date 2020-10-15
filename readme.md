@@ -8,13 +8,15 @@
 
 ## 使用说明
 
-- 方法 1:
+- 方法一:
   直接 `git clone https://github.com/3038922/ncrapi.git` 下载此项目
-- 方法 2:
-  下载 ncrapi10.1.2 压缩包`https://github.com/3038922/ncrapi/releases/download/V10.1.2/ncrapi@10.1.2.zip`
-  解压缩到你的 pros 项目目录.
+- 方法二:
+  下载
+  1. ncrapi10.1.2 压缩包`https://github.com/3038922/ncrapi/releases/download/V10.1.2/ncrapi@10.1.2.zip`到你的 pros 项目目录.
+  2. `prosv5 c f ./ncrapi@10.x.x.zip`
+  3. `prosv5 c a ncrapi@10.x.x`
 
-# 希望更多的 VERER 一起开发图形界面
+# 希望更多的 Vexer 一起开发图形界面
 
 ![cover5](https://github.com/3038922/ncrapi/blob/release9.0.0/pic/TIM%E5%9B%BE%E7%89%8720190219231717.jpg)
 
