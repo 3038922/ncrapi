@@ -2,7 +2,6 @@
 #include "ncrapi/device/vision.hpp"
 #include "ncrapi/filter/kalman.hpp"
 #include "pros/rtos.hpp"
-#include <memory>
 
 namespace ncrapi {
 const size_t BASE_DATASUM = 6;  //原始检测的数据

@@ -1,18 +1,17 @@
 #pragma once
+extern "C" {
 #include "display/lv_conf.h"
 #include "display/lvgl.h"
-#include "ncrapi/system/json.hpp"
 #include "pros/vision.h"
-#include <array>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <vector>
-
 extern lv_font_t ncrfont10;
 // extern lv_img_t field;
-LV_IMG_DECLARE(field); //声明一个场地图像变量
-LV_IMG_DECLARE(logo);  //声明一个logo图像变量
+LV_IMG_DECLARE(field) //声明一个场地图像变量
+LV_IMG_DECLARE(logo)  //声明一个logo图像变量
+}
+#include "ncrapi/system/json.hpp"
+
+#include <sstream>
+
 typedef enum obj_flag {
     OBJ_BTNM_SON, //起始页面下的选项
     BTNM_START,   //按钮阵列 为了防止重复删除 这个也要放前面

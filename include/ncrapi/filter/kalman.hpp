@@ -7,8 +7,6 @@
  */
 #pragma once
 #include "ncrapi/system/logger.hpp"
-#include <iostream>
-#include <valarray>
 
 namespace ncrapi {
 template <class T>
@@ -62,9 +60,7 @@ class KalmanFilter
   protected:
     T _fLast[2] = {0};
     T _fMid[2] = {0};
-    ;
     T _fNow[2] = {0};
-
     double _fQ = 0; // Q:过程噪声，Q增大，动态响应变快，收敛稳定性变坏
     double _fR = 0; // R:测量噪声，R增大，动态响应变慢，收敛稳定性变好
     T _fKg = 0;

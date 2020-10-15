@@ -2,7 +2,6 @@
 #include "json.hpp"
 #include "ncrapi/util/util.hpp"
 #include "object.hpp"
-#include <memory>
 
 namespace ncrapi {
 class SysBase

@@ -10,7 +10,6 @@
 #pragma once
 
 #include "ncrapi/units/RQuantity.hpp"
-#include <cmath>
 
 namespace ncrapi {
 QUANTITY_TYPE(0, 0, 0, 1, QAngle)

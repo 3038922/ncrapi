@@ -1,4 +1,4 @@
-// #pragma once
+#pragma once
 // #include "ncrapi//Eigen/Core"
 // #include "ncrapi//Eigen/Dense"
 // #include "ncrapi//Eigen/Eigen"

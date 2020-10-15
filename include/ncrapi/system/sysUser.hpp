@@ -1,3 +1,4 @@
+#pragma once
 #include "ncrapi/units/QLength.hpp"
 #include "sysBase.hpp"
 

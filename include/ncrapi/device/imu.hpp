@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ncrapi/system/json.hpp"
 #include "pros/imu.hpp"
 namespace ncrapi {

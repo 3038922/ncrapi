@@ -1,6 +1,5 @@
 #pragma once
 #include "ncrapi/system/logger.hpp"
-#include <iostream>
 #include <sstream>
 
 namespace ncrapi {
