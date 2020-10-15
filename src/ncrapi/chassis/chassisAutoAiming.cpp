@@ -1,11 +1,11 @@
 #include "ncrapi/chassis/chassisAutoAiming.hpp"
-#include "userConfig/robotSet.hpp"
-
 #include "ncrapi/system/sysUser.hpp"
 #include "ncrapi/system/visionData.hpp"
 
-namespace ncrapi {
-ChassisAutoAiming::ChassisAutoAiming(const json &pragma) : ChassisOdom(pragma), _autoAimingPid("自瞄pid", pragma["PID参数"])
+namespace ncrapi
+{
+ChassisAutoAiming::ChassisAutoAiming(const json &pragma, const std::array<int, 128> *frspeed, const std::array<int, 128> *routerSpeed, const std::array<int, 128> *translationSpeed)
+    : ChassisOdom(pragma, frspeed, routerSpeed, translationSpeed), _autoAimingPid("自瞄pid", pragma["PID参数"])
 {
     _shootPosVal = clamp<double>(pragma["参数"]["左右矫正比例"].get<double>(), 0.1, 2.0, "左右矫正比例");
     _autoAimingPid.setTarget(0); //前馈常数设置跟PID目标值有关 先设置目标 再重置PID
@@ -15,7 +15,7 @@ ChassisAutoAiming::ChassisAutoAiming(const json &pragma) : ChassisOdom(pragma), 
      *自瞄算法 
      * @param data 瞄准数据类
      */
-void ChassisAutoAiming::autoAimingCalc(const int speedMode[128])
+void ChassisAutoAiming::autoAimingCalc()
 {
     auto data = visionData->getData();
     if (data[0].signature != 0)
@@ -32,19 +32,19 @@ void ChassisAutoAiming::autoAimingCalc(const int speedMode[128])
             if (fabs(angleError) <= 4)
                 stop();
             else
-                driveVector(0, static_cast<int>(_autoAimingPid.step(-angleError)), frSpeed);
+                driveVector(0, static_cast<int>(_autoAimingPid.step(-angleError)));
 
         } //这里输出有问题啊 似乎是负数
     }
 }
-void ChassisAutoAiming::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_digital_e_t autoAimingBTN, const int speedMode[128])
+void ChassisAutoAiming::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_digital_e_t autoAimingBTN)
 {
     if (joy->get_digital(autoAimingBTN))
-        autoAimingCalc(speedMode);
+        autoAimingCalc();
     else
     {
         _isResetPid = true;
-        Chassis::arcade(joy, verticalVal, horizontalVal, speedMode);
+        Chassis::arcade(joy, verticalVal, horizontalVal);
     }
 }
 std::pair<QTime, double> ChassisAutoAiming::rotateAutoAiming(QAngle idegTarget)
@@ -74,7 +74,7 @@ std::pair<QTime, double> ChassisAutoAiming::rotateAutoAiming(QAngle idegTarget)
         if (!isUseVisionPid) //如果距离目标大于5° 或者 没有检测到东西
         {
             if ((idegTarget - angleChange).abs() > 15_deg || data[0].signature == 0)
-                driveVector(0, static_cast<int>(_anglePid.step(angleChange.convert(degree))), rotateSpeed); //这里输出有问题啊 似乎是负数
+                driveVector(0, static_cast<int>(_anglePid.step(angleChange.convert(degree)))); //这里输出有问题啊 似乎是负数
             else
                 isUseVisionPid = true;
         }

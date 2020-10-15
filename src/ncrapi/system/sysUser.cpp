@@ -1,5 +1,6 @@
-#include "main.hpp"
-namespace ncrapi {
+#include "ncrapi/ncrapi.hpp"
+namespace ncrapi
+{
 SysUser::SysUser(const json &paragam) : SysBase(paragam)
 {
     robotLength = QLength(clamp<int>(jsonVal["系统信息"]["机器人长度"].get<int>(), 300, 750, "机器人长度") * millimeter);
@@ -28,7 +29,7 @@ void SysUser::showRecoder()
         std::cout << std::endl;
     }
 }
-void SysUser::testAction()
+void SysUser::testAction(void (*autonomous)())
 {
     if (!pidDebugData.empty()) //empty()是空的返回1 不是空的返回0
     {
@@ -101,7 +102,7 @@ void SysUser::testAction()
         case 6:
             joy1->rumble(". . .");
             pros::delay(3000);
-            autonomous();
+            (*autonomous)();
             break;
         case 7:
             joy1->rumble(". . .");

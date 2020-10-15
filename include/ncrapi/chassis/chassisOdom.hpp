@@ -9,7 +9,7 @@ namespace ncrapi {
 class ChassisOdom : public Chassis
 {
   public:
-    explicit ChassisOdom(const json &pragma);
+    ChassisOdom(const json &pragma, const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
 
     /**
      * 重置底盘所有红色编码器

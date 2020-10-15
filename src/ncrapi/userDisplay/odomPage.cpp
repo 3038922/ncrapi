@@ -27,7 +27,8 @@ static lv_res_t autoChoseAction(lv_obj_t *btn)
     userDisplay->createCompe(lv_obj_get_parent(userDisplay->displayObj[OBJ_BTNM_SON]));
     return LV_RES_INV;
 }
-namespace ncrapi {
+namespace ncrapi
+{
 void UserDisplay::createOdom(lv_obj_t *parent)
 {
     createUserObj(OBJ_BTNM_SON, "里程计页面", parent);

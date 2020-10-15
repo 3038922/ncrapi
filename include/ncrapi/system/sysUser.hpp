@@ -2,7 +2,8 @@
 #include "ncrapi/units/QLength.hpp"
 #include "sysBase.hpp"
 
-namespace ncrapi {
+namespace ncrapi
+{
 class SysUser : public SysBase
 {
     using PidDebugTuple = std::tuple<double, double, double, double, double>; //PIDDATA的类型
@@ -22,7 +23,7 @@ class SysUser : public SysBase
     //PID参数数据
     std::vector<PidDebugTuple> pidDebugData;       //PID DEBUG数据
     std::vector<std::vector<double>> _recoderData; //记录机器人数据
-    void testAction();
+    void testAction(void (*autonomous)());
     //逻辑相关
     bool isShooted = false; //是否应发射 这里可能有线程同步的问题
 

@@ -2,13 +2,13 @@
 #include "ncrapi/system/sysUser.hpp"
 #include "ncrapi/units/QMass.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
-#include "userConfig/robotSet.hpp"
 #include <iomanip>
 
-namespace ncrapi {
+namespace ncrapi
+{
 
-ChassisOdom::ChassisOdom(const json &pragma)
-    : Chassis(pragma), _speedPid{VelPid("速度pid", pragma["PID参数"]), VelPid("速度pid", pragma["PID参数"])},
+ChassisOdom::ChassisOdom(const json &pragma, const std::array<int, 128> *frspeed, const std::array<int, 128> *routerSpeed, const std::array<int, 128> *translationSpeed)
+    : Chassis(pragma, frspeed, routerSpeed, translationSpeed), _speedPid{VelPid("速度pid", pragma["PID参数"]), VelPid("速度pid", pragma["PID参数"])},
       _distancePid("前后pid", pragma["PID参数"]), _anglePid("左右pid", pragma["PID参数"]), _gyroFilter(0.01, 0.02)
 {
     _multiplier = clamp<double>(pragma["参数"]["陀螺仪比例"].get<double>(), 0.1, 2.0, "陀螺仪比例");
@@ -148,8 +148,8 @@ std::pair<QTime, double> ChassisOdom::forwardPid(QLength itarget)
             tickEnc[i] = _encNow[i] - startEnc[i];
         double distanceElapsed = (tickEnc[0] + tickEnc[1]) / 2.0 * sysData->diameter; //编码器距离
         angleChange = _filterAngle - startAngle;
-        driveVector(static_cast<int>(_distancePid.step(distanceElapsed)), static_cast<int>(_anglePid.step(angleChange.convert(degree))), frSpeed); //开弧线 -负数
-        if (fabs(itarget.convert(millimeter) - distanceElapsed) <= atTargetDistance)                                                               //前后允许误差
+        driveVector(static_cast<int>(_distancePid.step(distanceElapsed)), static_cast<int>(_anglePid.step(angleChange.convert(degree)))); //开弧线 -负数
+        if (fabs(itarget.convert(millimeter) - distanceElapsed) <= atTargetDistance)                                                      //前后允许误差
             atTargetTimer.placeHardMark();
         else if ((_encSpeed[0].abs() + _encSpeed[1].abs()) <= threshold && distanceElapsed != 0) //速度变化到多慢的时候跳出
             atTargetTimer.placeHardMark();
@@ -189,7 +189,7 @@ std::pair<QTime, double> ChassisOdom::rotatePid(QAngle idegTarget)
     while (!atTarget)
     {
         angleChange = _filterAngle - startAngle;
-        driveVector(0, static_cast<int>(_anglePid.step(angleChange.convert(degree))), rotateSpeed); //这里输出有问题啊 似乎是负数
+        driveVector(0, static_cast<int>(_anglePid.step(angleChange.convert(degree)))); //这里输出有问题啊 似乎是负数
         //logger->info({"gyro:", std::to_string(angleChange), " enc:", std::to_string(encChange)});
         if ((idegTarget - angleChange).abs() <= atTargetAngle) //如果目标角度-当前角度小于等于允许误差角度 则break
             atTargetTimer.placeHardMark();

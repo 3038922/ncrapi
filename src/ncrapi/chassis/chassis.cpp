@@ -5,12 +5,20 @@
 
 namespace ncrapi {
 
-Chassis::Chassis(const json &pragma) : _name("底盘")
+Chassis::Chassis(const json &pragma, const std::array<int, 128> *frspeed, const std::array<int, 128> *routerSpeed, const std::array<int, 128> *translationSpeed) : _name("底盘")
 {
     for (auto &[key, value] : pragma["马达"].items())
         _motorList.push_back({key, value});
     _joyThreshold = clamp<int>(pragma["参数"]["遥控器矫正"].get<int>(), 0, 20, "遥控器矫正");
     _maxRotateSpd = clamp<int>(pragma["参数"]["最大旋转速度"].get<int>(), 60, 127, "最大旋转速度");
+    //赋值自定义速度
+    if (frspeed != nullptr)
+        _frSpeed = *frspeed;
+    if (routerSpeed != nullptr)
+        _routerSpeed = *routerSpeed;
+    if (frspeed != nullptr)
+        _frSpeed = *frspeed;
+    _translationSpeed = *translationSpeed;
     pros::delay(100);
     _sideNums = _motorList.size() / 2;
     _gearing = _motorList.begin()->getGearSpeed();
@@ -19,6 +27,7 @@ Chassis::Chassis(const json &pragma) : _name("底盘")
     setMode(clamp<int>(pragma["参数"]["模式"].get<int>(), 0, 1, "底盘模式"));
     logger->info({"底盘基类构造成功"});
 }
+
 void Chassis::set(const int left, const int right)
 {
     if (_mode != 0)
@@ -90,10 +99,10 @@ void Chassis::moveRelative(const double leftPos, const double rightPos, const st
      * 普通前进后退 开环控制
      * @param pwm  前进+ 后退- 范围:+-127
      */
-void Chassis::forward(const int pwm, const int speedMode[128])
+void Chassis::forward(const int pwm)
 {
     int sign = copySign(pwm);
-    set(speedMode[std::abs(pwm)] * sign, speedMode[std::abs(pwm)] * sign);
+    set(_frSpeed[std::abs(pwm)] * sign, _frSpeed[std::abs(pwm)] * sign);
 }
 /**
      * 使用速度环控制底盘前进后退
@@ -112,10 +121,10 @@ void Chassis::forwardRelative(const double pos, const std::int32_t velocity)
      * 普通旋转 开环控制
      * @param pwm 左转+ 右转- 范围:+-127
      */
-void Chassis::rotate(const int pwm, const int speedMode[128])
+void Chassis::rotate(const int pwm)
 {
     int sign = copySign(pwm);
-    set(-speedMode[std::abs(pwm)] * sign, speedMode[std::abs(pwm)] * sign);
+    set(-_routerSpeed[std::abs(pwm)] * sign, _routerSpeed[std::abs(pwm)] * sign);
 }
 /**
      * 使用速度环控制底盘左转右转 左转为+ 右转为-
@@ -138,24 +147,24 @@ void Chassis::stop()
         moveVelocity(0, 0);
 }
 
-void Chassis::driveVector(const int distPwm, const int anglePwm, const int speedMode[128]) //开弧线
+void Chassis::driveVector(const int distPwm, const int anglePwm) //开弧线
 {
     int left = clamp(distPwm - anglePwm, -_spdRange, _spdRange);
     int right = clamp(distPwm + anglePwm, -_spdRange, _spdRange);
     if (_mode == 0)
-        set(speedMode[std::abs(left)] * copySign(left), speedMode[std::abs(right)] * copySign(right));
+        set(_frSpeed[std::abs(left)] * copySign(left), _frSpeed[std::abs(right)] * copySign(right));
     else
     {
         double flag = _gearing / 127.0;
         moveVelocity(left * flag, right * flag);
     }
 }
-void Chassis::translation(const int pwm, const int speedMode[128])
+void Chassis::translation(const int pwm)
 {
     int sign = copySign(pwm);
-    set(speedMode[std::abs(pwm)] * sign, -speedMode[std::abs(pwm)] * sign, -speedMode[std::abs(pwm)] * sign, speedMode[std::abs(pwm)] * sign);
+    set(_translationSpeed[std::abs(pwm)] * sign, -_translationSpeed[std::abs(pwm)] * sign, -_translationSpeed[std::abs(pwm)] * sign, _translationSpeed[std::abs(pwm)] * sign);
 }
-void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, const int speedMode[128])
+void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal)
 {
 
     int x = joy->get_analog(verticalVal);
@@ -167,9 +176,9 @@ void Chassis::arcade(std::shared_ptr<pros::Controller> joy, pros::controller_ana
     y = clamp(y, -_maxRotateSpd, _maxRotateSpd);
     int left = clamp(x - y, -_spdRange, _spdRange);
     int right = clamp(x + y, -_spdRange, _spdRange);
-    set(speedMode[std::abs(left)] * copySign(left), speedMode[std::abs(right)] * copySign(right));
+    set(_frSpeed[std::abs(left)] * copySign(left), _frSpeed[std::abs(right)] * copySign(right));
 }
-void Chassis::h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal, const int speedMode[128])
+void Chassis::h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal)
 {
 
     int x = joy->get_analog(verticalVal);    //前后
@@ -185,9 +194,9 @@ void Chassis::h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_a
     int left = clamp(x - y, -_spdRange, _spdRange);
     int right = clamp(x + y, -_spdRange, _spdRange);
     int middle = clamp(z, -_spdRange, _spdRange);
-    set(speedMode[std::abs(left)] * copySign(left), speedMode[std::abs(right)] * copySign(right), middle);
+    set(_frSpeed[std::abs(left)] * copySign(left), _frSpeed[std::abs(right)] * copySign(right), _translationSpeed[std::abs(middle)] * copySign(middle));
 }
-void Chassis::mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal, const int speedMode[128])
+void Chassis::mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal)
 {
     int x = joy->get_analog(verticalVal);    //前后
     int y = -joy->get_analog(horizontalVal); //左右
@@ -203,7 +212,7 @@ void Chassis::mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_an
     int leftB = clamp(x - y - z, -_spdRange, _spdRange);  //左后
     int rightF = clamp(x + y - z, -_spdRange, _spdRange); //右前
     int rightB = clamp(x + y + z, -_spdRange, _spdRange); //右后
-    set(speedMode[std::abs(leftF)] * copySign(leftF), speedMode[std::abs(leftB)] * copySign(leftB), speedMode[std::abs(rightF)] * copySign(rightF), speedMode[std::abs(rightB)] * copySign(rightB));
+    set(_translationSpeed[std::abs(leftF)] * copySign(leftF), _translationSpeed[std::abs(leftB)] * copySign(leftB), _translationSpeed[std::abs(rightF)] * copySign(rightF), _translationSpeed[std::abs(rightB)] * copySign(rightB));
 }
 void Chassis::tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold)
 {

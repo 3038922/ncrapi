@@ -5,7 +5,7 @@ namespace ncrapi {
 class ChassisAutoAiming : public ChassisOdom
 {
   public:
-    ChassisAutoAiming(const json &pragma);
+    ChassisAutoAiming(const json &pragma, const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
     /**
      * @brief 带自瞄的旋转.
      * @param idegTarget 左转为+ 右转为-
@@ -14,9 +14,8 @@ class ChassisAutoAiming : public ChassisOdom
     /**
      * @brief 遥控用的自瞄模块  
      * 
-     * @param speedMode 马达的速度类型
      */
-    void autoAimingCalc(const int speedMode[128]);
+    void autoAimingCalc();
     /**
      * @brief 遥控模块
      * 
@@ -26,7 +25,7 @@ class ChassisAutoAiming : public ChassisOdom
      * @param autoAimingBTN 自瞄的按钮
      * @param speedMode 速度模式
      */
-    void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_digital_e_t autoAimingBTN, const int speedMode[128]);
+    void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_digital_e_t autoAimingBTN);
     /**
      * 重新设定前后PID参数
 
