@@ -5,6 +5,7 @@
 #include "ncrapi/system/object.hpp"
 #include "ncrapi/units/QAcceleration.hpp"
 #include "ncrapi/units/QSpeed.hpp"
+#include "ncrapi/util/odometry.hpp"
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
@@ -224,6 +225,11 @@ class Chassis : public Obj
     virtual const std::vector<Motor> getMotorInfo() const override;
 
     virtual bool isSafeMode() override;
+    //以下为伪装类
+    virtual void isStopPid(const bool isStopPid);
+
+    virtual void showOdom(bool isColor = false);
+    virtual const OdomState &getState();
 
   protected:
     const std::string _name;
@@ -238,6 +244,7 @@ class Chassis : public Obj
     QSpeed _encSpeed[2] = {0_mps, 0_mps}, _maxEncSpeed[2] = {0_mps, 0_mps};                   //记录机器人最大速度用的 单位mm/s
     QAcceleration _nowAccelSpeed[2] = {0_mps2, 0_mps2}, _maxAccelSpeed[2] = {0_mps2, 0_mps2}; //最大加速度 单位mm/s2
     bool _isSafeMode = false;
+    OdomState _state;
     std::array<int, 128> _frSpeed = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
         24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,

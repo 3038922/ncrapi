@@ -2,7 +2,6 @@
 #include "chassis.hpp"
 #include "ncrapi/pid/velPid.hpp"
 #include "ncrapi/units/QAngularSpeed.hpp"
-#include "ncrapi/util/odometry.hpp"
 
 namespace ncrapi {
 // namespace ncrapi
@@ -89,13 +88,13 @@ class ChassisOdom : public Chassis
     * 返回机器人的当前姿态
     * @return 返回姿态类型
     */
-    const OdomState &getState();
+    const OdomState &getState() override;
     /**
      * 显示传感器数据到屏幕 ostringstream ostr流
      */
     virtual void showSensor() override;
     virtual void showDetailedInfo() override;
-    virtual void showOdom(bool isColor = false);
+    virtual void showOdom(bool isColor = false) override;
     /**
  * @重置PID
  * @pragma name 名字
@@ -106,7 +105,7 @@ class ChassisOdom : public Chassis
      * 
      * @param isStopPid  false 不跳出循环 true 跳出循环
      */
-    virtual void isStopPid(const bool isStopPid);
+    virtual void isStopPid(const bool isStopPid) override;
     /**
      *  独立线程的机器人姿态测算循环
      */
@@ -131,7 +130,7 @@ class ChassisOdom : public Chassis
     Pid _anglePid;       //转弯
                          //KalmanFuse filterAngle; //融合滤波
                          //ODOMERTY
-    OdomState _state;
+
     QAngle _filterAngle = 0_deg, _gyroNow[2] = {0_deg, 0_deg}, _encAngle = 0_deg, _gyroDriftAvg = 0_deg; //陀螺仪飘零平均值 10MS
     QAngularSpeed _nowAngleSpeed[2] = {0_rpm, 0_rpm}, _maxAngleSpeed[2] = {0_rpm, 0_rpm};                //0编码测的的旋转速度 1 陀螺仪测的的旋转速度
     double _nowAccelAngle[2] = {0}, _maxAccelAngle[2] = {0};                                             //0编码测的的旋转加速度 1 陀螺仪测的的旋转加速度

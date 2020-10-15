@@ -23,7 +23,6 @@ class ChassisAutoAiming : public ChassisOdom
      * @param verticalVal 前后通道的按钮
      * @param horizontalVal 左右通道的按钮
      * @param autoAimingBTN 自瞄的按钮
-     * @param speedMode 速度模式
      */
     void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_digital_e_t autoAimingBTN);
     /**

@@ -1,0 +1,77 @@
+{
+  "C_Cpp.autocomplete": "Disabled",
+  "C_Cpp.formatting": "Disabled",
+  "C_Cpp.errorSquiggles": "Disabled",
+  "C_Cpp.intelliSenseEngine": "Disabled",
+  "LineCount.showStatusBarItem": true,
+  "LineCount.includes": ["**/*"],
+  "LineCount.excludes": [
+    "**/.vscode/**",
+    "**/include/display/**",
+    "**/include/pros/**",
+    "**/bin/**",
+    "**/C@/**",
+    "**/firmware/**",
+    "**/外部资源/**",
+    "**/.clang-format/**",
+    "**/.gitignore/**",
+    "**/CMakeLists.txt/**",
+    "**/common.mk/**",
+    "**/compile_commands.json/**",
+    "**/Makefile/**",
+    "**/project.pros/**"
+  ],
+  "LineCount.output": {
+    "txt": false,
+    "json": false,
+    "md": true,
+    "outdir": "lineCount"
+  },
+  "LineCount.sort": "filename",
+  "LineCount.order": "asc",
+  "LineCount.comment": [
+    {
+      "ext": ["c", "cpp", "java"],
+      "separator": {
+        "linecomment": "//",
+        "linetol": false,
+        "blockstart": "/*",
+        "blockend": "*/",
+        "blocktol": false,
+        "string": {
+          "doublequotes": true,
+          "singlequotes": true
+        }
+      }
+    },
+    {
+      "ext": ["html"],
+      "separator": {
+        "blockstart": "<!--",
+        "blockend": "-->"
+      }
+    }
+  ],
+  "cSpell.ignoreWords": [
+    "btnm",
+    "btns",
+    "compe",
+    "elaps",
+    "filter",
+    "iangle",
+    "ibackwards",
+    "ideg",
+    "ioffset",
+    "itarget",
+    "kalman",
+    "kalman filter",
+    "lvgl",
+    "mbox",
+    "mecanum",
+    "nlohmann",
+    "odometry",
+    "opcontrol",
+    "ostr",
+    "radps"
+  ]
+}

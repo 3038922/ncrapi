@@ -2,7 +2,7 @@
 #include "ncrapi/chassis/chassisAutoAiming.hpp"
 #include "ncrapi/generic/roulette.hpp"
 #include "ncrapi/generic/shooter.hpp"
-#include "ncrapi/system/sysUser.hpp"
+#include "ncrapi/system/ncrSystem.hpp"
 #include "ncrapi/system/visionData.hpp"
 
 #define PROS_VERSION_MAJOR 3
