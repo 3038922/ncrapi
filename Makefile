@@ -12,30 +12,25 @@ BINDIR=$(ROOT)/bin
 SRCDIR=$(ROOT)/src
 INCDIR=$(ROOT)/include
 
-WARNFLAGS+=
-EXTRA_CFLAGS=
-EXTRA_CXXFLAGS=
+WARNFLAGS+=# 
+EXTRA_CFLAGS=-Wall -Wextra
+EXTRA_CXXFLAGS=-Wall -Wextra  -Wno-unused-function -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unused-variable  -Wno-implicit-fallthrough  -Werror=return-type -Wno-reorder #-Wmissing-include-dirs -Wconversion -pedantic
 
 # Set to 1 to enable hot/cold linking
-USE_PACKAGE:=1
-
-# Add libraries you do not wish to include in the cold image here
-# EXCLUDE_COLD_LIBRARIES:= $(FWDIR)/your_library.a
-EXCLUDE_COLD_LIBRARIES:= 
+USE_PACKAGE:=0
 
 # Set this to 1 to add additional rules to compile your project as a PROS library template
-IS_LIBRARY:=0
-# TODO: CHANGE THIS!
-LIBNAME:=libbest
-VERSION:=1.0.0
-# EXCLUDE_SRC_FROM_LIB= $(SRCDIR)/unpublishedfile.c
+IS_LIBRARY:=1
+LIBNAME:=ncrapi
+VERSION:=10.1.2
+EXCLUDE_SRC_FROM_LIB=$(call rwildcard,$(SRCDIR)/skillAuto,$(SRCDIR)/userAuto,*.*)
 # this line excludes opcontrol.c and similar files
-EXCLUDE_SRC_FROM_LIB+=$(foreach file, $(SRCDIR)/main,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))
+EXCLUDE_SRC_FROM_LIB+= $(foreach file, $(SRCDIR)/customTest $(SRCDIR)/initialize $(SRCDIR)/autonomous $(SRCDIR)/main,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))
 
 # files that get distributed to every user (beyond your source archive) - add
 # whatever files you want here. This line is configured to add all header files
 # that are in the the include directory get exported
-TEMPLATE_FILES=$(INCDIR)/**/*.h $(INCDIR)/**/*.hpp
+TEMPLATE_FILES=$(INCDIR)/ncrapi/**/*.h $(INCDIR)/ncrapi/**/*.hpp
 
 .DEFAULT_GOAL=quick
 
