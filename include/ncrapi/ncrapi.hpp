@@ -17,12 +17,11 @@
 //通用部件
 extern std::shared_ptr<pros::Controller> joy1;
 extern std::shared_ptr<pros::Controller> joy2;
-extern std::shared_ptr<ncrapi::ChassisOdom> chassis;     //底盘
-extern std::shared_ptr<ncrapi::Roulette> roulette;       //吸吐
-extern std::shared_ptr<ncrapi::SeparateShooter> shooter; //分离式发射器
-
+extern std::shared_ptr<ncrapi::Chassis> chassis;  //底盘
+extern std::shared_ptr<ncrapi::Generic> roulette; //吸吐
+extern std::shared_ptr<ncrapi::Generic> shooter;  //发射器
+//自动赛线程
 extern pros::Task *autoTask;
-
 static void taskAuto(void *para)
 {
     uint32_t now = pros::millis();
@@ -32,14 +31,6 @@ static void taskAuto(void *para)
         shooter->holding();
         pros::Task::delay_until(&now, 10);
     }
-}
-/**
-  * 用于机器人姿态计算的多线程启动函数
- * @param para NULL
- */
-static void taskOdom(void *para)
-{
-    chassis->odomLoop();
 }
 void skillAuto(const json &jsonVal, ncrapi::Timer &autoTimer);
 void userauto(const json &jsonVal, ncrapi::Timer &autoTimer);
