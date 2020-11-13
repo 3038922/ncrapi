@@ -4,9 +4,7 @@ extern "C" {
 #include "display/lvgl.h"
 #include "pros/vision.h"
 extern lv_font_t ncrfont10;
-// extern lv_img_t field;
-LV_IMG_DECLARE(field) //声明一个场地图像变量
-LV_IMG_DECLARE(logo)  //声明一个logo图像变量
+LV_IMG_DECLARE(logo) //声明一个logo图像变量
 }
 #include "ncrapi/system/json.hpp"
 
@@ -49,10 +47,10 @@ class UserDisplay
     uint32_t loopTime = 0;
     uint32_t maxLoopTime = 0;
     uint32_t minLoopTime = 20;
-
+    //饿汉模式单例实现.线程安全
+    static UserDisplay *initUserDisplay();
+    static UserDisplay *getUserDisplay();
     //自动赛选项按钮
-
-    UserDisplay();
     void delObjs();
     void delTasks();
     void drawRectangle(lv_obj_t *obj, const int i, const pros::vision_object &data, lv_style_t *style);
@@ -78,6 +76,10 @@ class UserDisplay
     void createSaveBtn(obj_flag objname, const int x = LV_HOR_RES - 140, const int y = LV_VER_RES - 60, const int width = 50, const int high = 25);  //创建保存按钮
     void createResetBtn(obj_flag objname, const int x = LV_HOR_RES - 140, const int y = LV_VER_RES - 60, const int width = 50, const int high = 25); //创建重制传感器按钮
     void createMbox(obj_flag objname, const char *txt1, const char *txt2, const char *txt3, lv_btnm_action_t action);                                //创建一个消息框
+    lv_obj_t *createUpdownBtn(lv_obj_t *parent, const char *key, json &val);
+    lv_obj_t *createUpdownBtnArr(lv_obj_t *parent, json &tempJson, const int column,
+                                 const size_t w, const size_t h,
+                                 const std::initializer_list<std::string> ignore = {""}); //创建更改按钮
     void init();
     static lv_res_t startBtnmAction(lv_obj_t *btnm, const char *txt); //启动页面动作
     static lv_res_t closeAction(lv_obj_t *btn);                       //退出按钮的动作
@@ -85,7 +87,7 @@ class UserDisplay
     static lv_res_t saveAction(lv_obj_t *btn);                        //保存按钮的动作
     static lv_res_t upDownAction(lv_obj_t *btnm, const char *txt);    //upDownBtn的动作
     static lv_res_t swAction(lv_obj_t *sw);
-    static lv_res_t hidenAction(lv_obj_t *btn); //隐藏按钮
+    static lv_res_t hideAction(lv_obj_t *btn); //隐藏按钮
 
     static lv_res_t clearAction(lv_obj_t *btn); //控制台清楚按钮
 
@@ -93,6 +95,8 @@ class UserDisplay
     std::ostringstream ostr;
 
   private:
+    static UserDisplay *_userDisplay; // 单例对象在这里！
+    UserDisplay();
 };
+#define userDisplay UserDisplay::getUserDisplay()
 } // namespace ncrapi
-extern std::unique_ptr<ncrapi::UserDisplay> userDisplay;

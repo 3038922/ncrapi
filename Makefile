@@ -14,15 +14,14 @@ INCDIR=$(ROOT)/include
 
 WARNFLAGS+=# 
 EXTRA_CFLAGS=-Wall -Wextra
-EXTRA_CXXFLAGS=-Wall -Wextra  -Wno-unused-function -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unused-variable  -Wno-implicit-fallthrough  -Werror=return-type -Wno-reorder #-Wmissing-include-dirs -Wconversion -pedantic
-
+EXTRA_CXXFLAGS=-Wall -Wextra  -Wno-unused-function -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unused-variable  -Wno-implicit-fallthrough  -Werror=return-type -Wno-reorder -Wno-comment #-Wmissing-include-dirs -Wconversion -pedantic
 # Set to 1 to enable hot/cold linking
 USE_PACKAGE:=0
 
 # Set this to 1 to add additional rules to compile your project as a PROS library template
 IS_LIBRARY:=1
 LIBNAME:=ncrapi
-VERSION:=10.1.2
+VERSION:=10.2.0
 EXCLUDE_SRC_FROM_LIB=$(call rwildcard,$(SRCDIR)/skillAuto,$(SRCDIR)/userAuto,*.*)
 # this line excludes opcontrol.c and similar files
 EXCLUDE_SRC_FROM_LIB+= $(foreach file, $(SRCDIR)/customTest $(SRCDIR)/userauto $(SRCDIR)/initialize $(SRCDIR)/autonomous $(SRCDIR)/main,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))

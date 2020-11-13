@@ -26,6 +26,7 @@ class Motor : public pros::Motor
      * @return int 范湖齿轮的速度 红齿轮100 绿齿轮200 蓝齿轮600
      */
     int getGearSpeed();
+    virtual double getEncVal();
 
   private:
     void init(int gear);

@@ -1,4 +1,5 @@
 #pragma once
+#include "display/lvgl.h"
 #include "ncrapi/util/timer.hpp"
 
 namespace ncrapi {
@@ -7,13 +8,15 @@ class Logger
 {
   public:
     typedef enum LEVEL {
-        ERROR = 0,
+        ERROR,
         WARNING,
         DEBUG,
         INFO
 
     } LEVEL;
-    Logger();
+    //饿汉模式单例实现.线程安全 因为日志永不关闭 所以就不写释放了
+    static Logger *initLogger();
+    static Logger *getLogger();
     /**
      * @brief 打印红色错误信息到控制台和机器人内置控制台
      * 
@@ -47,18 +50,18 @@ class Logger
      * @brief DEBUG模块的线程
      * 
      */
-    void loop();
+    static void loop(void *pragma);
     std::string terminalStr[2];
+    lv_obj_t *errorLabs = nullptr, *warningLabs = nullptr; //控制台上的显示错误数量的lab
 
   private:
+    Logger();
+    ~Logger() {}
+    static Logger *_logger; // 单例对象在这里！;
     bool isComp = false;
     void output(std::initializer_list<std::string> &val);
     std::string _str;
     size_t _errorCount = 0, _warningCount = 0;
 };
+#define logger Logger::getLogger()
 } // namespace ncrapi
-extern std::unique_ptr<ncrapi::Logger> logger;
-static void taskLogger(void *para)
-{
-    logger->loop();
-}

@@ -12,5 +12,5 @@
 #include "ncrapi/units/RQuantity.hpp"
 
 namespace ncrapi {
-QUANTITY_TYPE(0, 0, -2, 1, QAngularAcceleration)
+QUANTITY_TYPE(0, 0, -2, 1, QAngularAcceleration) //角加速度
 }

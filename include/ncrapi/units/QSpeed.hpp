@@ -15,12 +15,21 @@
 
 namespace ncrapi {
 QUANTITY_TYPE(0, 1, -1, 0, QSpeed)
-
-constexpr QSpeed mps = meter / second;
-constexpr QSpeed miph = mile / hour;
-constexpr QSpeed kmph = kilometer / hour;
+constexpr QSpeed mmps = millimeter / second; //毫米/每秒
+constexpr QSpeed cmps = centimeter / second; //厘米/每秒
+constexpr QSpeed mps = meter / second;       //米/每秒
+constexpr QSpeed miph = mile / hour;         //英里/每小时
+constexpr QSpeed kmph = kilometer / hour;    //公里每小时
 
 inline namespace literals {
+constexpr QSpeed operator"" _mmps(long double x)
+{
+    return static_cast<double>(x) * mmps;
+}
+constexpr QSpeed operator"" _cmps(long double x)
+{
+    return static_cast<double>(x) * cmps;
+}
 constexpr QSpeed operator"" _mps(long double x)
 {
     return static_cast<double>(x) * mps;
@@ -32,6 +41,14 @@ constexpr QSpeed operator"" _miph(long double x)
 constexpr QSpeed operator"" _kmph(long double x)
 {
     return static_cast<double>(x) * kilometer / hour;
+}
+constexpr QSpeed operator"" _mmps(unsigned long long int x)
+{
+    return static_cast<double>(x) * mmps;
+}
+constexpr QSpeed operator"" _cmps(unsigned long long int x)
+{
+    return static_cast<double>(x) * cmps;
 }
 constexpr QSpeed operator"" _mps(unsigned long long int x)
 {

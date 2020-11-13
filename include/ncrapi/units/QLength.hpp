@@ -23,8 +23,25 @@ constexpr QLength inch = 2.54 * centimeter;
 constexpr QLength foot = 12 * inch;
 constexpr QLength yard = 3 * foot;
 constexpr QLength mile = 5280 * foot;
-
+constexpr QLength tile = 2 * foot;   //代表场地的一块垫子 一块垫子2英尺
+constexpr QLength court = 12 * foot; //代表整个场地 12英尺
 inline namespace literals {
+constexpr QLength operator"" _tl(long double x)
+{
+    return static_cast<double>(x) * tile;
+}
+constexpr QLength operator"" _crt(long double x)
+{
+    return static_cast<double>(x) * court;
+}
+constexpr QLength operator"" _tl(unsigned long long int x)
+{
+    return static_cast<double>(x) * tile;
+}
+constexpr QLength operator"" _crt(unsigned long long int x)
+{
+    return static_cast<double>(x) * court;
+}
 constexpr QLength operator"" _mm(long double x)
 {
     return static_cast<double>(x) * millimeter;
