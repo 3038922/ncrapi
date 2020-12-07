@@ -18,7 +18,6 @@
 #define I18N_PORT "端口"
 #define I18N_IS_REVERSE "正反"
 #define I18N_GEAR "齿轮"
-#define I18N_MOTOR "马达"
 #define I18N_PRAGMA "参数"
 #define I18N_PROPORTION "比例"
 #define I18N_BALANCE "平衡"
@@ -106,8 +105,8 @@
 #define I18N_SYSTEM_CLEAN_PIG_DEBUG_DATA "清除pid调试日志"
 //VISION_DATA
 #define I18N_VISION "视觉传感器"
-#define I18N_VISION_DATA "视觉数据类"
-#define I18N_VISION_DATA_1 "视觉传感器内置数据["
+#define I18N_VISION_SYSTEM "视觉系统类"
+#define I18N_VISION_DATA_1 "内置数据["
 #define I18N_VISION_DATA_2 "]错误,使用程序内置数据"
 #define I18N_VISION_DATA_3 " 构建错误!json曝光度:"
 #define I18N_VISION_DATA_4 " 传感器内置曝光度:"
@@ -129,8 +128,23 @@
 #define I18N_GYRO "陀螺仪"
 #define I18N_BUMPER "碰撞"
 #define I18N_LINE "巡线"
+//马达
+#define I18N_MOTOR "马达"
 //IMU
 #define I18N_IMU "IMU" //惯性传感器
+//光学传感器
+#define I18N_OPTICAL_INFO "光学传感器信息"
+#define I18N_OPTICAL "光学传感器" //光学传感器
+#define I18N_LED_PWM "光学LED亮度"
+#define I18N_HUE_RED "红色色相"
+#define I18N_HUE_BLUE "蓝色色相"
+#define I18N_HUE_GREEN "绿色色相"
+#define I18N_SATURATION "饱和度"
+#define I18N_PROXIMITY "距离"
+//激光传感器
+#define I18N_DISTANCE_INFO "激光传感器信息"
+#define I18N_DISTANCE "激光传感器"
+#define I18N_OFFSET "偏移量"
 //FILTER
 #define I18N_KALMAN_FILTER "卡尔曼滤波"
 //PID
@@ -153,4 +167,3 @@
 #define I18N_CHASSIS_WITHOUT_ODOMETER "当前为普通地盘类,未构造里程计底盘类"
 #define I18N_MAX_ROTATE_SPD "最大旋转速度"
 //GENERIC
-#define I18N_JACK "千斤顶"

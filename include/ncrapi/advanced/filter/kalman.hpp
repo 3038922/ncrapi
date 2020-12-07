@@ -17,11 +17,17 @@ class KalmanFilter
   public:
     KalmanFilter(const double Q, const double R) : _fQ(Q), _fR(R)
     {
-        logger->info({I18N_KALMAN_FILTER I18N_CREATE_SUCCESSFUL});
+        logger->info(I18N_KALMAN_FILTER I18N_CREATE_SUCCESSFUL "\n");
     }
 
     virtual const T &filter(const T &ireading)
     {
+        if (_isFirstRun < 4)
+        {
+            _fLast[0] = ireading;
+            _fLast[1] = ireading;
+            _isFirstRun++;
+        }
         _fMid[0] = _fLast[0];                               //将上一次的系统最优赋值给一个中间变量
         _fMid[1] = _fLast[1] + _fQ;                         //将上一次的COVARIANCE值加上系统噪声（This->Q）赋值给一个中间变量（系统白噪声在你调试的过程中 换着变量赋值，但绝对不能是零，在不断的测试过程中你修改这个值，得到你要的最佳效果）
         _fKg = _fMid[1] / (_fMid[1] + _fR);                 // 计算kg的公式
@@ -69,6 +75,7 @@ class KalmanFilter
         _fNow[1] = 0;
         _fKg = 0;
         _fKlmFlag = 0;
+        _isFirstRun = 0;
     }
 
   protected:
@@ -82,5 +89,6 @@ class KalmanFilter
     T _fKlmFlag = 0;
     T _sensor2Now = 0;
     T _sensor2Last = 0;
+    int _isFirstRun = 0;
 };
 } // namespace ncrapi

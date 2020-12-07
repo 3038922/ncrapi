@@ -3,8 +3,8 @@ extern "C" {
 #include "display/lv_conf.h"
 #include "display/lvgl.h"
 #include "pros/vision.h"
-extern lv_font_t ncrfont10;
-LV_IMG_DECLARE(logo) //声明一个logo图像变量
+extern lv_font_t ncrfont8; //微软雅黑8
+LV_IMG_DECLARE(logo)       //声明一个logo图像变量
 }
 #include "ncrapi/system/json.hpp"
 
@@ -50,6 +50,8 @@ class UserDisplay
     //饿汉模式单例实现.线程安全
     static UserDisplay *initUserDisplay();
     static UserDisplay *getUserDisplay();
+    json &setTmpJson() { return _tmpJson; }
+    const json getTmpJson() { return _tmpJson; }
     //自动赛选项按钮
     void delObjs();
     void delTasks();
@@ -72,11 +74,13 @@ class UserDisplay
     void createPidTest(lv_obj_t *parent);                                                                                                            //6
     void createOdom(lv_obj_t *parent);                                                                                                               //7
     void createCustomTest(lv_obj_t *parent);                                                                                                         //8
+    void createOpticalTest(lv_obj_t *parent);                                                                                                        //9
+    void createDistanceTest(lv_obj_t *parent);                                                                                                       //10
     void createExitBtn(obj_flag objname, const int x = LV_HOR_RES - 80, const int y = LV_VER_RES - 60, const int width = 50, const int high = 25);   //创建退出按钮
     void createSaveBtn(obj_flag objname, const int x = LV_HOR_RES - 140, const int y = LV_VER_RES - 60, const int width = 50, const int high = 25);  //创建保存按钮
     void createResetBtn(obj_flag objname, const int x = LV_HOR_RES - 140, const int y = LV_VER_RES - 60, const int width = 50, const int high = 25); //创建重制传感器按钮
     void createMbox(obj_flag objname, const char *txt1, const char *txt2, const char *txt3, lv_btnm_action_t action);                                //创建一个消息框
-    lv_obj_t *createUpdownBtn(lv_obj_t *parent, const char *key, json &val);
+    lv_obj_t *createUpdownBtn(lv_obj_t *parent, const char *key, json &val, lv_btnm_action_t action = upDownAction);
     lv_obj_t *createUpdownBtnArr(lv_obj_t *parent, json &tempJson, const int column,
                                  const size_t w, const size_t h,
                                  const std::initializer_list<std::string> ignore = {""}); //创建更改按钮
@@ -91,11 +95,11 @@ class UserDisplay
 
     static lv_res_t clearAction(lv_obj_t *btn); //控制台清楚按钮
 
-    json _tempData;
     std::ostringstream ostr;
 
   private:
     static UserDisplay *_userDisplay; // 单例对象在这里！
+    json _tmpJson;
     UserDisplay();
 };
 #define userDisplay UserDisplay::getUserDisplay()

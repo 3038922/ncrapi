@@ -1,7 +1,7 @@
 #pragma once
 #include "ncrapi/advanced/odometry.hpp"
 #include "ncrapi/advanced/pid/posPid.hpp"
-#include "ncrapi/advanced/pid/velPid.hpp"
+#include "ncrapi/advanced/pid/regulationPid.hpp"
 #include "ncrapi/device/adi.hpp"
 #include "ncrapi/device/motor.hpp"
 #include "ncrapi/device/vision.hpp"
@@ -114,7 +114,7 @@ class Chassis : public Obj
     /**
      * 底盘马达停转
      */
-    virtual void stop() override;
+    void stop() override;
     /**
      * 矢量控制 开弧线
      * @param distPwm  前进的力度 前进+ 后退-
@@ -129,7 +129,7 @@ class Chassis : public Obj
      * @param horizontalVal   左右通道
      * @param threshold 遥控器矫正阀值
      */
-    virtual void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal);
+    void arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal);
 
     /**
      * 5马达底盘遥控模块 单摇杆双摇杆都用这个
@@ -138,7 +138,7 @@ class Chassis : public Obj
      * @param translationVal  平移通道
      * @param threshold 遥控器矫正阀值
      */
-    virtual void h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
+    void h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
 
     /**
      * 遥控模块 麦轮遥控
@@ -147,7 +147,7 @@ class Chassis : public Obj
      * @param translationVal  平移通道
      * @param threshold       遥控器矫正阀值
      */
-    virtual void mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
+    void mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
     /**
      * 遥控模块 坦克遥控
      * @param left      左通道
@@ -159,73 +159,75 @@ class Chassis : public Obj
     /**
      * 重置底盘所有马达编码器
      */
-    virtual void resetEnc();
+    void resetEnc();
     /**
       * @获取左边或者右边编码器值
       * @param side 0左边 1右边
       * @return QAngle 返回左边或者右边编码器值 一圈360°
       */
-    virtual double getEnc(const bool side);
+    double getEnc(const bool side);
     /**
      * 获取电机当前速度  
      * @param side  0左边 1右边
      * @return double 返回左边或者右边编码器值
      */
-    virtual double getSpeed(const bool side);
+    double getSpeed(const bool side);
     /**
      * @brief 获取底盘当前速度 单位mm/s
      * 
      * @param side 0左边 1右边
      * @return double  返回机器人底盘速度
      */
-    virtual QSpeed getChassisSpeed(const bool side);
+    QSpeed getChassisSpeed(const bool side);
     /**
  * 获取左边或者右边的温度
  * @param side 左边0 右边1
  * @return const double 返回左边或者右边的温度
  */
-    virtual double getTemperature(const bool side) const;
+    double getTemperature(const bool side) const;
     /**
  * 获取左边或者右边的电压
  * @param side 左边0 右边1
  * @return int32_t 返回左边或者右边的电压
  */
-    virtual int32_t getVoltage(const bool side) const;
+    int32_t getVoltage(const bool side) const;
     /**
  * 获取左边或者右边的电流
  * @param side 左边0 右边1
  * @return int32_t 返回左边或者右边的电流
  */
-    virtual int32_t getCurrent(const bool side) const;
+    int32_t getCurrent(const bool side) const;
     /**
  * 获取左边或者右边的扭矩
  * @param side 左边0 右边1
  * @return int32_t 返回左边或者右边的扭矩
  */
-    virtual double getTorque(const bool side) const;
+    double getTorque(const bool side) const;
+    void setCurrentLimit(const int32_t limit);
+    void setVelPid(const pros::motor_pid_full_s_t pid) const;
 
     /**
      * 设置马达制动模式 使用会导致马达端口烧掉
      * @param mode 马达制动的模式 
      */
-    virtual void setBrakeMode(pros::motor_brake_mode_e_t mode);
+    void setBrakeMode(pros::motor_brake_mode_e_t mode);
     /**
      * @brief 打印内置PID数据到控制台
      * 
      */
-    virtual void getVelPid();
-    virtual const std::string showName() const override;
-    virtual void setMode(const int mode) override;
-    virtual const std::vector<Motor> getMotorInfo() const override;
+    void getVelPid();
+    const std::string showName() const override;
+    void setMode(const int mode) override;
+    const std::vector<Motor> getMotorInfo() const override;
 
-    virtual bool isSafeMode() override;
-    virtual void isStopPid(const bool isStopPid);
-    virtual void showOdom(bool isColor = false);
+    bool isSafeMode() override;
+    void isStopPid(const bool isStopPid);
+    void showOdom(std::ostringstream &ostr, bool isColor = false);
     /************************************************************************************/
     /**
      *重置底盘上所有传感器 
     */
-    virtual void resetAllSensors() override;
+    void resetAllSensors() override;
 
     /**
      * 机器人速度控制FOR PID
@@ -297,10 +299,16 @@ class Chassis : public Obj
     const QLength getYState();
     const QAngle getThetaState();
     /**
+     * @brief 获取机器人的理论最大速度
+     * 
+     * @return const QSpeed 返回速度
+     */
+    const QSpeed getTheoreticalMaxSpeed() { return _theoreticalMaxSpeed; }
+    /**
      * 显示传感器数据到屏幕 ostringstream ostr流
      */
-    virtual void showSensor() override;
-    virtual void showDetailedInfo() override;
+    void showSensor(std::ostringstream &ostr) override;
+    void showDetailedInfo(std::ostringstream &ostr) override;
     /**
      *  独立线程的机器人姿态测算循环
      */
@@ -343,7 +351,7 @@ class Chassis : public Obj
             const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
     Chassis(const json &pragma, Odometer *odometry = nullptr,
             const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
-    static Chassis *_ncrChassis; // 单例对象
+    static Chassis *_chassis; // 单例对象
     const std::string _name;
     std::vector<Motor> _motorList;
     int _joyThreshold = 10, _maxRotateSpd = 127;
@@ -353,6 +361,7 @@ class Chassis : public Obj
     size_t _gearing;
     circular_buffer<double, 3> _encVal[2];                                                    //编码器值                                                    //齿轮最大速度                                                        // 编码器值
     double _gearRatio = 1.0;                                                                  //底盘齿轮比
+    QSpeed _theoreticalMaxSpeed = 0.0_cmps;                                                   //理论最大速度
     QSpeed _chassisSpeed[2] = {0_mps, 0_mps}, _maxChassisSpeed[2] = {0_mps, 0_mps};           //记录底盘左右轮子当前速度和最大速度 单位mm/s
     QAcceleration _nowAccelSpeed[2] = {0_mps2, 0_mps2}, _maxAccelSpeed[2] = {0_mps2, 0_mps2}; //最大加速度 单位mm/s2
     int _robotState = 0;                                                                      //机器人状态 0停止 1 前后 2 后退 3 左转 4 右转
@@ -381,9 +390,9 @@ class Chassis : public Obj
         121, 122, 123, 124, 125, 126, 127};
 
     //PID相关
-    std::shared_ptr<PosPid> _distancePid = nullptr; //距离
-    std::shared_ptr<PosPid> _anglePid = nullptr;    //旋转pid
-    std::shared_ptr<VelPid> _velPid[2] = {nullptr}; //速度环 0左 1右
+    std::shared_ptr<PosPid> _distancePid = nullptr;        //距离
+    std::shared_ptr<PosPid> _anglePid = nullptr;           //旋转pid
+    std::shared_ptr<RegulationPid> _velPid[2] = {nullptr}; //速度环 0左 1右
 
     //里程计
     Odometer *_odoMeter = nullptr;

@@ -3,7 +3,6 @@
 #include "ncrapi/system/circular_buffer.hpp"
 #include "ncrapi/system/json.hpp"
 #include "ncrapi/system/object.hpp"
-#include "ncrapi/userDisplay/userDisplay.hpp"
 #include "ncrapi/util/timer.hpp"
 #include "pros/misc.hpp"
 
@@ -17,6 +16,7 @@ class Generic : public Obj
 {
 
   public:
+    Generic(const std::string &name, std::vector<Motor> &motorList, const int holdVal);
     Generic(const std::string &name, const json &pragma);
     /**
      * @brief 获取当前部件悬停值
@@ -37,12 +37,7 @@ class Generic : public Obj
      */
     virtual void set(const uint32_t nums, const int pwm);
     /**
-     * 普通的电压控制 开环     
-     * @param vol +-120
-     */
-    virtual void moveVoltage(const double vol);
-    /**
-     * @brief 部件马达停止运转
+     * @brief 所有部件马达停止运转
      * 
      */
     virtual void stop() override;
@@ -80,12 +75,7 @@ class Generic : public Obj
     *失败，设置错误。
      */
     virtual void moveVelocity(const std::int32_t velocity);
-    /**
-     * @brief 获取当前部件状态
-     * 
-     * @return int 各个部件定义的_state不同
-     */
-    virtual int getState();
+
     /**
      * @brief 悬停逻辑状态都写这里
      * 
@@ -115,10 +105,16 @@ class Generic : public Obj
  */
     virtual void setEnc(const double pos);
     /**
-     * @brief 获取开环控制占空比(pwm)
+     * @brief 获取开环控制平均占空比(pwm)
      * 
      */
     virtual int getOpenLoopVal();
+    /**
+     * @brief 获取开环控制占空比(pwm)
+     * @param nums 马达编号0开始
+     */
+    virtual int getOpenLoopVal(const int nums);
+
     /**
      * @brief 设置编码器移动的位置 
      * 
@@ -197,23 +193,21 @@ class Generic : public Obj
     /**
      * 显示传感器数据到屏幕 ostringstream ostr流
      */
-    virtual void showSensor() override;
+    virtual void showSensor(std::ostringstream &ostr) override;
     virtual const std::string showName() const override;
-    virtual void showDetailedInfo() override;
+    virtual void showDetailedInfo(std::ostringstream &ostr) override;
     virtual const std::vector<Motor> getMotorInfo() const override;
 
   protected:
     std::shared_ptr<pros::Controller> _thisJoy = nullptr;
     std::vector<Motor> _motorList;
     std::vector<circular_buffer<double, 3>> _encVal;
+    std::vector<int> _openLoopVal; //开环控制设置值 相当于pwm
     const std::string _name;
     int _holdVal;
     float _holdingFlag = 0;
-    int _openLoopVal = 0; //开环控制设置值
     size_t _safeModeFlags = 0;
-    int _state = 0;       //-1降 0 悬停 1 升
-    int _mode = 0;        //1 系统正传 0悬停 -1 系统反转 2使用原厂PID控制
-    size_t _gearing;      //齿轮最大速度
+    int _mode = 0;        //系统模式
     size_t _nums = 0;     //马达总数
     bool _isInit = false; //是否初始化
     int _target = 0;

@@ -5,6 +5,7 @@
 namespace ncrapi {
 class PosPid : public Pid<double, double>
 {
+  protected:
     enum pidPragma { KP = 0,
                      KI,
                      KD,

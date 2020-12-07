@@ -12,9 +12,9 @@ namespace ncrapi {
 class Obj
 {
   public:
-    virtual void showSensor() = 0;
+    virtual void showSensor(std::ostringstream &ostr) = 0;
     virtual const std::string showName() const = 0;
-    virtual void showDetailedInfo() = 0;
+    virtual void showDetailedInfo(std::ostringstream &ostr) = 0;
     virtual void resetAllSensors() = 0;
     virtual void stop() = 0;
     virtual void setMode(int flag) = 0;

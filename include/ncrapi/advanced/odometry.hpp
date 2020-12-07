@@ -70,7 +70,7 @@ class Odometer
      * 
      * @return double 
      */
-    double getScale();
+    QLength getScale();
     /**
      * @brief 获取编码器测量角度中间参数
      * 
@@ -186,7 +186,7 @@ class Odometer
     std::tuple<QLength, QLength, QMass, QLength, QLength> _odomInfo = {0_mm, 0_mm, 0_kg, 0_mm, 0_mm};
     QLength odomMin = 0_mm;
     QLength odomMax = 0_mm;
-    double _scale = 0.0;                 //车轮直径中间参数 单位mm
+    QLength _scale = 0.0_mm;             //车轮直径中间参数 单位mm
     double _turnScale = 0.0;             //编码器测量角度中间参数 单位mm
                                          //陀螺仪相关
                                          // std::shared_ptr<ADIAnalogIn> _gyro = nullptr;                           //陀螺仪

@@ -2,7 +2,6 @@
 #include "ncrapi/system/circular_buffer.hpp"
 #include "ncrapi/system/json.hpp"
 #include "ncrapi/system/logger.hpp"
-#include "ncrapi/system/ncrSystem.hpp"
 #include "ncrapi/util/timer.hpp"
 #include "ncrapi/util/util.hpp"
 
@@ -33,7 +32,7 @@ class Pid
         for (auto &it : pragma[name])
             for (auto &it1 : it)
                 _pragma.push_back(it1.get<double>());
-        logger->info({"pid基类构造成功"});
+        logger->info("pid基类构造成功\n");
     }
     /**
      * @brief PID模板类构造函数 vector
@@ -43,7 +42,7 @@ class Pid
      */
     Pid(const std::string &name, const DataType &pragma) : _name(name), _pragma(pragma)
     {
-        logger->info({"pid基类构造成功"});
+        logger->info("pid基类构造成功\n");
     }
     /**
     * @brief PID核心计算
@@ -99,7 +98,7 @@ class Pid
                                   //遍历录入pid
         for (auto &it1 : pragma)
             _pragma.push_back(it1.get<double>());
-        logger->info({"重置:", _name, "PID参数"});
+        logger->info("重置:", _name, "PID参数\n");
         showPidParams();
     }
 
@@ -178,7 +177,10 @@ class Pid
      * 
      * @param inewReading 
      */
-    virtual void calcNowError(Input inewReading) { _error.push_back(_target - inewReading); }
+    virtual void calcNowError(Input inewReading)
+    {
+        _error.push_back(_target - inewReading);
+    }
     virtual void calcNowKdSum() { _kdSum = (_error.back() - _error[1]) * _pragma[KD]; } //这里可以加入滤波 让刹车更线性
     virtual void calcNowKpSum() { _kpSum = _pragma[KP] * _error.back(); }
     virtual void calcNowKiSum()
@@ -189,7 +191,10 @@ class Pid
             _kiSum = 0;
         _kiSum = clamp(_kiSum, _integralMin, _integralMax);
     }
-    virtual void calcNowOutput() { _output = clamp(_kpSum + _kiSum + _kdSum + _pragma[BIAS], _outputMin, _outputMax); }
+    virtual void calcNowOutput()
+    {
+        _output = clamp(_kpSum + _kiSum + _kdSum + _pragma[BIAS], _outputMin, _outputMax);
+    }
     // virtual void addDebugData()
     // {
     //     if (fabs(_error[1]) < fabs(_target) * 0.2) //如果开启测试模式 且 上次误差 小于 目标值*0.2
@@ -197,18 +202,19 @@ class Pid
     // }
     virtual void showDebugData()
     {
+        //std::cout << _target << " " << _error.back() << " " << _output << std::endl;
         if (copySign(_error.back()) == copySign(_error[1]))
-            logger->info({"targe:", std::to_string(_target), " error:", std::to_string(_error.back()),
-                          " output:", std::to_string(static_cast<int>(_output)),
-                          " kp:", std::to_string(_kpSum),
-                          " ki:", std::to_string(_kiSum),
-                          " kd:", std::to_string(_kdSum)});
+            logger->info(" target: ", _target, " error: ", _error.back(),
+                         " output: ", static_cast<int>(_output),
+                         " kp: ", _kpSum,
+                         " ki: ", _kiSum,
+                         " kd: ", _kdSum);
         else
-            logger->debug({"targe:", std::to_string(_target), " error:", std::to_string(_error.back()),
-                           " output:", std::to_string(static_cast<int>(_output)),
-                           " kp:", std::to_string(_kpSum),
-                           " ki:", std::to_string(_kiSum),
-                           " kd:", std::to_string(_kdSum)});
+            logger->debug(" target: ", _target, " error: ", _error.back(),
+                          " output: ", static_cast<int>(_output),
+                          " kp: ", _kpSum,
+                          " ki: ", _kiSum,
+                          " kd: ", _kdSum);
     }
     // circular_buffer<PidDebugTuple, 20> _deBugData;
     DataType _pragma;                                        //数据 0KP 1 KI 2 KD 3kBias 4Limit //5 Q 6R

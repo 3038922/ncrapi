@@ -44,12 +44,12 @@ T clamp(const T &val, const T min, const T max, std::string name)
 {
     if (val < min)
     {
-        logger->warning({name, "超限,输入值:", std::to_string(val), "已设置为最小值:", std::to_string(min)});
+        logger->warning(name, "超限,输入值:", val, "已设置为最小值:", min, "\n");
         return min;
     }
     else if (val > max)
     {
-        logger->warning({name, "超限,输入值:", std::to_string(val), "已设置为最大值:", std::to_string(max)});
+        logger->warning(name, "超限,输入值:", val, "已设置为最大值:", max, "\n");
         return max;
     }
     else

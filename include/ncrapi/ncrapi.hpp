@@ -1,9 +1,11 @@
 #pragma once
-#include "ncrapi/advanced/visionData.hpp"
+#include "ncrapi/advanced/distanceSystem.hpp"
+#include "ncrapi/advanced/visionSystem.hpp"
 #include "ncrapi/robotParts/chassis.hpp"
-#include "ncrapi/robotParts/roulette.hpp"
 #include "ncrapi/robotParts/shooter.hpp"
 #include "ncrapi/system/ncrSystem.hpp"
+#include "ncrapi/userDisplay/userDisplay.hpp"
+#include "userconfig.hpp"
 
 #define PROS_VERSION_MAJOR 3
 #define PROS_VERSION_MINOR 3
@@ -12,15 +14,24 @@
 
 #define PROS_ERR (INT32_MAX)
 #define PROS_ERR_F (INFINITY)
-#define NCR_VERSION_STRING "10.2.0"
-
+#define NCR_VERSION_STRING "10.3.4"
+/*******TASK******
+里程计 TASK_PRIORITY_DEFAULT+3
+自动赛 TASK_PRIORITY_DEFAULT+2
+视觉 TASK_PRIORITY_DEFAULT+1
+********TASK******/
 //通用部件
 extern std::shared_ptr<pros::Controller> joy1;
 extern std::shared_ptr<pros::Controller> joy2;
 extern std::shared_ptr<ncrapi::Generic> roulette; //吸吐
 extern std::shared_ptr<ncrapi::Generic> shooter;  //发射器
-extern pros::Task *autoTask;
 
+extern pros::Task *autoTask;
+/**
+ * @brief 自动赛线程
+ * 
+ * @param para 传递参数
+ */
 static void taskAuto(void *para)
 {
     uint32_t now = pros::millis();

@@ -8,6 +8,7 @@ namespace ncrapi {
  */
 class VelPid : public Pid<double, double>
 {
+  protected:
     enum pidPragma { KP = 0,
                      KI,
                      KD,
@@ -25,6 +26,7 @@ class VelPid : public Pid<double, double>
     virtual void reset() override;
 
   protected:
+    virtual void calcNowError(double inewReading) override;
     virtual void calcNowKdSum() override;
     virtual void calcNowKpSum() override;
     virtual void calcNowKiSum() override;
