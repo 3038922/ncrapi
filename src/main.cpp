@@ -99,7 +99,6 @@ void opcontrol()
     joy1->print(0, 0, "joy    robot   ball");
     while (true)
     {
-        // std::cout << "errorCode:" << strerror(errno) << std::endl; //打印错误码
         userDisplay->loopTime = pros::millis() - lastTime;
         lastTime = pros::millis();
         if (userDisplay->loopTime > userDisplay->maxLoopTime)
@@ -116,7 +115,6 @@ void opcontrol()
                     joy = joy1;
                 joy->rumble(". ");
             }
-
             chassis->arcade(joy1, ANALOG_LEFT_Y, ANALOG_RIGHT_X);
             roulette->joyControl(joy, DIGITAL_R1, DIGITAL_R2);
             shooter->joyControl(joy, DIGITAL_L1, DIGITAL_L2);
@@ -126,12 +124,6 @@ void opcontrol()
             ncrSys->stopAllObj();
             if (joy1->get_digital_new_press(DIGITAL_A))
                 ncrSys->testAction(&autonomous, &customTest, joy1);
-        }
-        if (joyDisTime.getDtFromMark() >= 100_ms)
-        {
-            //满电4200 没电的时候3400和 16
-            joy->print(1, 0, "%d%%    %.0f%%     %u", joy1->get_battery_capacity(), pros::battery::get_capacity(), opticalSystem->getBallNums());
-            joyDisTime.placeMark();
         }
         pros::Task::delay_until(&nowTime, 10);
     }
