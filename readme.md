@@ -12,7 +12,7 @@
   直接 `git clone https://github.com/3038922/ncrapi.git` 下载此项目
 - 方法二:
   下载
-  1. 从relase里下载最新的ncrapix.x.x 压缩包 到你的 pros 项目目录.
+  1. 从release里下载最新的ncrapix.x.x 压缩包 到你的 pros 项目目录.
   2. `prosv5 c f ./ncrapi@10.x.x.zip`
   3. `prosv5 c a ncrapi@10.x.x`
 
