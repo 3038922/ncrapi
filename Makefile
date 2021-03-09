@@ -21,7 +21,7 @@ USE_PACKAGE:=0
 # Set this to 1 to add additional rules to compile your project as a PROS library template
 IS_LIBRARY:=1
 LIBNAME:=ncrapi
-VERSION:=10.6.7
+VERSION:=10.6.8
 EXCLUDE_SRC_FROM_LIB=$(call rwildcard,$(SRCDIR)/skillAuto,$(SRCDIR)/userAuto,*.*)
 # this line excludes opcontrol.c and similar files
 EXCLUDE_SRC_FROM_LIB+= $(foreach file, $(SRCDIR)/customTest $(SRCDIR)/userauto $(SRCDIR)/initialize $(SRCDIR)/autonomous $(SRCDIR)/main,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))
@@ -29,7 +29,7 @@ EXCLUDE_SRC_FROM_LIB+= $(foreach file, $(SRCDIR)/customTest $(SRCDIR)/userauto $
 # files that get distributed to every user (beyond your source archive) - add
 # whatever files you want here. This line is configured to add all header files
 # that are in the the include directory get exported
-TEMPLATE_FILES=$(INCDIR)/ncrapi/**/*.h $(INCDIR)/ncrapi/**/*.hpp
+TEMPLATE_FILES=$(INCDIR)/ncrapi/ncrapi.hpp $(INCDIR)/ncrapi/*/*.h $(INCDIR)/ncrapi/*/*.hpp $(INCDIR)/ncrapi/**/*.h $(INCDIR)/ncrapi/**/*.hpp
 
 .DEFAULT_GOAL=quick
 
