@@ -9,6 +9,7 @@
 #include "ncrapi/units/QMass.hpp"
 
 namespace ncrapi {
+using Coordinate = std::tuple<QLength, QLength, QAngle>;
 enum {
     X = 0,
     Y,
@@ -92,9 +93,9 @@ class Odometer
     /**
      * @brief 获取当前里程计的所有坐标
      * 
-     * @return std::tuple<QLength, QLength, QAngle> 0是X轴坐标 1是Y轴坐标 2是角度(弧度)
+     * @return Coordinate 0是X轴坐标 1是Y轴坐标 2是角度(弧度)
      */
-    std::tuple<QLength, QLength, QAngle> getOdomState();
+    Coordinate &getOdomState();
     /**
      * @brief 获取X轴坐标
      * 
@@ -180,7 +181,7 @@ class Odometer
              const QLength wheelDiameter, const QLength wheelSpacing, const QLength siteSize, const double ticksPerRev = 360.0);
     Odometer(const json &param);
 
-    std::tuple<QLength, QLength, QAngle> _odomState = {0_mm, 0_mm, 0_deg}; //0 x 1 y 2 theta
+    Coordinate _odomState = {0_mm, 0_mm, 0_deg}; //0 x 1 y 2 theta
 
     //0 机器人长度 1 机器人宽度 2 机器人重量 3 车轮直径 4轮间距 5 赛场边长
     std::tuple<QLength, QLength, QMass, QLength, QLength> _odomInfo = {0_mm, 0_mm, 0_kg, 0_mm, 0_mm};

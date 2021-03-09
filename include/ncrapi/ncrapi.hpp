@@ -5,21 +5,22 @@
 #include "ncrapi/robotParts/shooter.hpp"
 #include "ncrapi/system/ncrSystem.hpp"
 #include "ncrapi/userDisplay/userDisplay.hpp"
-#include "userconfig.hpp"
+#include "userConfig.hpp"
 
 #define PROS_VERSION_MAJOR 3
-#define PROS_VERSION_MINOR 3
-#define PROS_VERSION_PATCH 1
-#define PROS_VERSION_STRING "3.3.1"
+#define PROS_VERSION_MINOR 4
+#define PROS_VERSION_PATCH 0
+#define PROS_VERSION_STRING "3.4.0"
 
 #define PROS_ERR (INT32_MAX)
 #define PROS_ERR_F (INFINITY)
-#define NCR_VERSION_STRING "10.3.4"
+#define NCR_VERSION_STRING "10.6.7"
 /*******TASK******
 里程计 TASK_PRIORITY_DEFAULT+3
 自动赛 TASK_PRIORITY_DEFAULT+2
 视觉 TASK_PRIORITY_DEFAULT+1
 ********TASK******/
+//通用部件
 //通用部件
 extern std::shared_ptr<pros::Controller> joy1;
 extern std::shared_ptr<pros::Controller> joy2;

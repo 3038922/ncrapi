@@ -11,8 +11,18 @@ class ADIAnalogIn : public pros::ADIAnalogIn
 
     std::string getName();
     int getPort();
+    void showADIAnalogInInfo(std::ostringstream &ostr);
+    void setTargetVal(int val)
+    {
+        _targetVal = val;
+    }
+    int getTargetVal()
+    {
+        return _targetVal;
+    }
 
   private:
+    int _targetVal = 0;
     const int _port;
     const std::string _name;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "ncrapi/system/json.hpp"
+#include "ncrapi/units/QAngle.hpp"
 #include "ncrapi/units/QLength.hpp"
 #include "pros/distance.hpp"
 
@@ -12,12 +13,13 @@ class Distance : public pros::Distance
 {
   public:
     /**
-   * @brief 激光传感器构造函数
-   * 
-   * @param name 激光传感器名字
-   * @param port 激光传感器端口
-   */
-    Distance(const std::string &name, const int &port, const QLength offset);
+ * @brief 激光传感器构造函数
+ * 
+ * @param name 传感器名字 命名方式 激光_前 激光_左
+ * @param port 端口
+ * @param offsetLength 距离机器中心点的偏移量
+ */
+    Distance(const std::string &name, const int &port, const QLength offsetLength);
     /**
    * @brief 激光传感器构造函数
    * 
@@ -32,12 +34,20 @@ class Distance : public pros::Distance
      * @return QLength 可以转换成毫米 厘米 米等.
      */
     virtual QLength getLength();
+
     /**
      * @brief 以获取当前到传感器的测量距离加上偏移量 一般都用这个
      * 
-     * @return QLength 可以转换成毫米 厘米 米等.
+     * @param offset 偏移量 默认0.375_in 就是加上场地围板的厚度
+     * @return QLength  QLength 可以转换成毫米 厘米 米等.
      */
-    QLength getLengthOffset();
+    QLength getLengthOffset(const QLength &offset = 0.375_in);
+    /**
+     * @brief 获取角度偏移量 SLAM使用
+     * 
+     * @return QAngle 返回预设的偏移量 前0 后180 左90 右-90 
+     */
+    QAngle getOffsetAngle();
     /**
      * @brief 获取激光传感器名字
      * 
@@ -59,6 +69,7 @@ class Distance : public pros::Distance
 
   private:
     const std::string _name;
-    QLength _offset = 0_mm;
+    QLength _offsetLength = 0_mm;
+    QAngle _offsetAngle = 0_deg;
 };
 } // namespace ncrapi

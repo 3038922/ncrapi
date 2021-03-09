@@ -54,6 +54,7 @@ class Pid
     {
         if (_isOn)
         {
+            _count++;
             calcNowError(inewReading); //距离目标的差值 =期望的目标值-当前传感器的值
             calcNowKdSum();            //计算KD积分
             calcNowKpSum();            //这个是方便我PRINT doubleF的
@@ -64,7 +65,7 @@ class Pid
         }
         else
             _output = 0; //Controller is off so write 0
-        if (_error.size() < 3)
+        if (_count < 7 && _target != 0)
             return (_outputMax * copySign(_output));
         else
             return _output;
@@ -147,6 +148,7 @@ class Pid
     virtual void reset()
     {
         _error.clear();
+        _count = 0;
         // _error.push_back(0); //clear 后 .back()依然会返回最后一次的值 所以要add 0;
         _kiSum = 0;
         _output = 0;
@@ -181,12 +183,17 @@ class Pid
     {
         _error.push_back(_target - inewReading);
     }
-    virtual void calcNowKdSum() { _kdSum = (_error.back() - _error[1]) * _pragma[KD]; } //这里可以加入滤波 让刹车更线性
+    virtual void calcNowKdSum()
+    {
+        if (fabs(_error.back()) <= _pragma[LIMIT])              //距离目标很近的时候 KD才介入 急刹车
+            _kdSum = (_error.back() - _error[1]) * _pragma[KD]; //这里可以加入滤波 让刹车更线性
+        else
+            _kdSum = 0;
+    }
     virtual void calcNowKpSum() { _kpSum = _pragma[KP] * _error.back(); }
     virtual void calcNowKiSum()
     {
-        if (fabs(_error.back()) <= _pragma[LIMIT]) //如果误差小于距离限制 进入PID 那机器会有个抬头问题.
-            _kiSum += _pragma[KI] * _error.back();
+        _kiSum += _pragma[KI] * _error.back();
         if (ncrapi::copySign(_error.back()) != ncrapi::copySign(_error[1])) //如果距离还很远的时间积分值归零 这个可以自己按自己的工程随便写
             _kiSum = 0;
         _kiSum = clamp(_kiSum, _integralMin, _integralMax);
@@ -208,13 +215,13 @@ class Pid
                          " output: ", static_cast<int>(_output),
                          " kp: ", _kpSum,
                          " ki: ", _kiSum,
-                         " kd: ", _kdSum);
+                         " kd: ", _kdSum, "\n");
         else
             logger->debug(" target: ", _target, " error: ", _error.back(),
                           " output: ", static_cast<int>(_output),
                           " kp: ", _kpSum,
                           " ki: ", _kiSum,
-                          " kd: ", _kdSum);
+                          " kd: ", _kdSum, "\n");
     }
     // circular_buffer<PidDebugTuple, 20> _deBugData;
     DataType _pragma;                                        //数据 0KP 1 KI 2 KD 3kBias 4Limit //5 Q 6R
@@ -225,5 +232,6 @@ class Pid
     Output _output = 0, _outputMax = 127, _outputMin = -127; //当前输出值 最大输出 最小输出
     bool _isOn = true;                                       // 是否打开PID
     std::string _name;                                       //mode:前后  或者 左右
+    size_t _count = 0;                                       //启动计数器
 };
 } // namespace ncrapi

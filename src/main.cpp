@@ -1,6 +1,5 @@
 #include "main.h"
 #include "ncrapi/ncrapi.hpp"
-#include "userconfig.hpp"
 using namespace ncrapi;
 //全局变量和类
 //全局初始化构造函数

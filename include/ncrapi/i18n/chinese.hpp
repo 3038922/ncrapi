@@ -165,5 +165,9 @@
 #define I18N_RB "右后"
 #define I18N_MID "中间"
 #define I18N_CHASSIS_WITHOUT_ODOMETER "当前为普通地盘类,未构造里程计底盘类"
-#define I18N_MAX_ROTATE_SPD "最大旋转速度"
+#define I18N_MIN_FR_PWM "最小前后PWM"
+#define I18N_MAX_FR_PWM "最大前后PWM"
+
+#define I18N_MIN_ROTATE_PWM "最小旋转PWM"
+#define I18N_MAX_ROTATE_PWM "最大旋转PWM"
 //GENERIC

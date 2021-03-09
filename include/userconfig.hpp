@@ -1,10 +1,8 @@
 #pragma once
 #include "ncrapi/i18n/chinese.hpp"
 #include "ncrapi/system/json.hpp"
-
-const int MaxBallNums = 4; //两个光学传感器之间的球数 非常重要,千万别乱写
 const json userData = {
-    {I18N_JSON_VER, 0.3},
+    {I18N_JSON_VER, 0.4},
     {
         I18N_SYSTEM_INFO,
         {
@@ -35,10 +33,12 @@ const json userData = {
                          {"右后", {{"端口", 4}, {"正反", true}, {"齿轮", 1}}},
                      }},
             {"参数", {
-                         {I18N_GEAR_RATIO, 1.0},
+                         {I18N_GEAR_RATIO, 1.667},
                          {"遥控器矫正", 10},
-                         {"最大旋转速度", 127},
-
+                         {I18N_MIN_FR_PWM, 20},
+                         {I18N_MAX_FR_PWM, 127},
+                         {I18N_MIN_ROTATE_PWM, 21},
+                         {I18N_MAX_ROTATE_PWM, 127},
                      }},
         },
     },

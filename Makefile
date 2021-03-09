@@ -21,7 +21,7 @@ USE_PACKAGE:=0
 # Set this to 1 to add additional rules to compile your project as a PROS library template
 IS_LIBRARY:=1
 LIBNAME:=ncrapi
-VERSION:=10.3.4
+VERSION:=10.6.7
 EXCLUDE_SRC_FROM_LIB=$(call rwildcard,$(SRCDIR)/skillAuto,$(SRCDIR)/userAuto,*.*)
 # this line excludes opcontrol.c and similar files
 EXCLUDE_SRC_FROM_LIB+= $(foreach file, $(SRCDIR)/customTest $(SRCDIR)/userauto $(SRCDIR)/initialize $(SRCDIR)/autonomous $(SRCDIR)/main,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))

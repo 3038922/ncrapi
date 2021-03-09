@@ -22,10 +22,8 @@ class Chassis : public Obj
 {
   public:
     //饿汉模式单例实现.线程安全
-    static Chassis *initChassis(const json &pragma,
-                                const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
-    static Chassis *initChassis(const json &pragma, Odometer *odometry,
-                                const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
+    static Chassis *initChassis(const json &pragma);
+    static Chassis *initChassis(const json &pragma, Odometer *odometry);
     //但获取单例指针
     static Chassis *getChassis();
 
@@ -136,7 +134,6 @@ class Chassis : public Obj
      * @param verticalVal     前后通道
      * @param horizontalVal   左右通道
      * @param translationVal  平移通道
-     * @param threshold 遥控器矫正阀值
      */
     void h_arcade(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
 
@@ -145,16 +142,14 @@ class Chassis : public Obj
      * @param verticalVal     前后通道
      * @param horizontalVal   左右通道
      * @param translationVal  平移通道
-     * @param threshold       遥控器矫正阀值
      */
     void mecanum(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t verticalVal, pros::controller_analog_e_t horizontalVal, pros::controller_analog_e_t translationVal);
     /**
      * 遥控模块 坦克遥控
      * @param left      左通道
      * @param right     右通道
-     * @param threshold 遥控器矫正阀值
      */
-    void tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right, const int threshold = 10);
+    void tank(std::shared_ptr<pros::Controller> joy, pros::controller_analog_e_t left, pros::controller_analog_e_t right);
 
     /**
      * 重置底盘所有马达编码器
@@ -295,9 +290,30 @@ class Chassis : public Obj
      * @param y Y点坐标
      */
     void setOdomY(const QLength y);
+    /**
+     * @brief 返回里程计X值
+     * 
+     * @return const QLength  返回当前X值
+     */
     const QLength getXState();
+    /**
+     * @brief 返回里程计Y值
+     * 
+     * @return const QLength 返回当前Y值
+     */
     const QLength getYState();
+    /**
+     * @brief 获取里程计THETA值
+     * 
+     * @return const QAngle 返回当前THETA值
+     */
     const QAngle getThetaState();
+    /**
+     * @brief 获取里程计X Y THETA的引用
+     * 
+     * @return Coordinate& 返回里程计三个值的引用
+     */
+    Coordinate &getOdomState();
     /**
      * @brief 获取机器人的理论最大速度
      * 
@@ -347,17 +363,16 @@ class Chassis : public Obj
     /*****************************************************************************/
 
   private:
-    Chassis(const json &pragma,
-            const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
-    Chassis(const json &pragma, Odometer *odometry = nullptr,
-            const std::array<int, 128> *frspeed = nullptr, const std::array<int, 128> *routerSpeed = nullptr, const std::array<int, 128> *translationSpeed = nullptr);
+    Chassis(const json &pragma);
+    Chassis(const json &pragma, Odometer *odometry);
     static Chassis *_chassis; // 单例对象
     const std::string _name;
     std::vector<Motor> _motorList;
-    int _joyThreshold = 10, _maxRotateSpd = 127;
-    int _spdRange = 127;
-    size_t _sideNums = 0; //半边马达数量
-    int _pwm[2];          //0 左边pwm 1 右边pwm
+    int _joyThreshold = 10;
+    int _minFrPWM = 0, _maxFrPWM = 127;         //最小最大前后速度
+    int _minRotatePWM = 0, _maxRotatePWM = 127; //最小最大旋转速度
+    size_t _sideNums = 0;                       //半边马达数量
+    int _pwm[2];                                //0 左边pwm 1 右边pwm
     size_t _gearing;
     circular_buffer<double, 3> _encVal[2];                                                    //编码器值                                                    //齿轮最大速度                                                        // 编码器值
     double _gearRatio = 1.0;                                                                  //底盘齿轮比
@@ -366,28 +381,6 @@ class Chassis : public Obj
     QAcceleration _nowAccelSpeed[2] = {0_mps2, 0_mps2}, _maxAccelSpeed[2] = {0_mps2, 0_mps2}; //最大加速度 单位mm/s2
     int _robotState = 0;                                                                      //机器人状态 0停止 1 前后 2 后退 3 左转 4 右转
     bool _isSafeMode = false;
-    std::array<int, 128> _frSpeed = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,                               //
-        20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,                     //
-        40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,                     //
-        60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,                     //
-        80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,                     //
-        100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, //
-        120, 121, 122, 123, 124, 125, 126, 127};
-    std::array<int, 128> _routerSpeed = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-        24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-        49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
-        73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96,
-        97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,
-        121, 122, 123, 124, 125, 126, 127};
-    std::array<int, 128> _translationSpeed = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-        24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-        49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
-        73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96,
-        97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,
-        121, 122, 123, 124, 125, 126, 127};
 
     //PID相关
     std::shared_ptr<PosPid> _distancePid = nullptr;        //距离
